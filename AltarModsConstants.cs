@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using System;
+using System.Linq;
 
 namespace AltarHelper
 {
@@ -74,9 +76,11 @@ namespace AltarHelper
             ("Final Boss drops # additional Chromatic Orbs", "Final Boss drops (2–4) additional Chromatic Orbs", "Boss"),
             ("Final Boss drops # additional Orbs of Fusing", "Final Boss drops (2–4) additional Orbs of Fusing", "Boss"),
             ("Final Boss drops # additional Jeweller's Orbs", "Final Boss drops (2–4) additional Jeweller's Orbs", "Boss"),
+            ("Final Boss drops # additional Divination Cards", "Final Boss drops (2–4) additional Divination Cards", "Boss"),
             ("Final Boss drops # additional Divination Cards which reward Currency", "Final Boss drops (2–4) additional Divination Cards which reward Currency", "Boss"),
             ("Final Boss drops # additional Divination Cards which reward Basic Currency", "Final Boss drops (2–4) additional Divination Cards which reward Basic Currency", "Boss"),
             ("Final Boss drops # additional Divination Cards which reward League Currency", "Final Boss drops (2–4) additional Divination Cards which reward League Currency", "Boss"),
+            ("Final Boss drops # additional Divination Cards which reward Exotic Currency", "Final Boss drops (2–4) additional Divination Cards which reward Exotic Currency", "Boss"),
             ("Final Boss drops # additional Divination Cards which reward other Divination Cards", "Final Boss drops (2–4) additional Divination Cards which reward other Divination Cards", "Boss"),
             ("Final Boss drops # additional Divination Cards which reward Gems", "Final Boss drops (2–4) additional Divination Cards which reward Gems", "Boss"),
             ("Final Boss drops # additional Divination Cards which reward Levelled Gems", "Final Boss drops (2–4) additional Divination Cards which reward Levelled Gems", "Boss"),
@@ -125,6 +129,7 @@ namespace AltarHelper
             ("Final Boss drops # additional Influence Scarabs", "Final Boss drops (2–4) additional Influence Scarabs", "Boss"),
             ("Final Boss drops # additional Cartography Scarabs", "Final Boss drops (2–4) additional Cartography Scarabs", "Boss"),
             ("Final Boss drops # additional Divination Scarabs", "Final Boss drops (2–4) additional Divination Scarabs", "Boss"),
+            ("Final Boss drops # additional Kalguuran Scarabs", "Final Boss drops (2–4) additional Kalguuran Scarabs", "Boss"),
             ("Final Boss drops # additional Anarchy Scarabs", "Final Boss drops (2–4) additional Anarchy Scarabs", "Boss"),
             ("Final Boss drops # additional Harbinger Scarabs", "Final Boss drops (2–4) additional Harbinger Scarabs", "Boss"),
             ("Final Boss drops # additional Miscellaneous Scarabs", "Final Boss drops (2–4) additional Miscellaneous Scarabs", "Boss"),
@@ -134,6 +139,7 @@ namespace AltarHelper
             ("Final Boss drops # additional Domination Scarabs", "Final Boss drops (2–4) additional Domination Scarabs", "Boss"),
             ("Final Boss drops # additional Essence Scarabs", "Final Boss drops (2–4) additional Essence Scarabs", "Boss"),
             ("Final Boss drops # additional Reliquary Scarabs", "Final Boss drops (2–4) additional Reliquary Scarabs", "Boss"),
+            ("Final Boss drops # additional Ancient Orbs", "Final Boss drops (2–4) additional Ancient Orbs", "Boss"),
             ("Hits have #% chance to ignore Enemy Physical Damage Reduction", "Hits have (50–80)%% chance to ignore Enemy Physical Damage Reduction", "Minion"),
             ("Skills fire # additional Projectiles", "Skills fire (3–5) additional Projectiles", "Minion"),
             ("#% increased Attack Speed", "(30–50)%% increased Attack Speed", "Minion"),
@@ -189,9 +195,11 @@ namespace AltarHelper
             ("#% chance to drop an additional Chromatic Orb", "(1.6–3.2)%% chance to drop an additional Chromatic Orb", "Minion"),
             ("#% chance to drop an additional Orb of Fusing", "(1.6–3.2)%% chance to drop an additional Orb of Fusing", "Minion"),
             ("#% chance to drop an additional Jeweller's Orb", "(1.6–3.2)%% chance to drop an additional Jeweller's Orb", "Minion"),
+            ("#% chance to drop an additional Divination Card", "(1.6–3.2)%% chance to drop an additional Divination Card", "Minion"),
             ("#% chance to drop an additional Divination Card which rewards Currency", "(1.6–3.2)%% chance to drop an additional Divination Card which rewards Currency", "Minion"),
             ("#% chance to drop an additional Divination Card which rewards Basic Currency", "(1.6–3.2)%% chance to drop an additional Divination Card which rewards Basic Currency", "Minion"),
             ("#% chance to drop an additional Divination Card which rewards League Currency", "(1.6–3.2)%% chance to drop an additional Divination Card which rewards League Currency", "Minion"),
+            ("#% chance to drop an additional Divination Card which rewards Exotic Currency", "(1.6–3.2)%% chance to drop an additional Divination Card which rewards Exotic Currency", "Minion"),
             ("#% chance to drop an additional Divination Card which rewards other Divination Cards", "(1.6–3.2)%% chance to drop an additional Divination Card which rewards other Divination Cards", "Minion"),
             ("#% chance to drop an additional Divination Card which rewards Gems", "(1.6–3.2)%% chance to drop an additional Divination Card which rewards Gems", "Minion"),
             ("#% chance to drop an additional Divination Card which rewards Levelled Gems", "(1.6–3.2)%% chance to drop an additional Divination Card which rewards Levelled Gems", "Minion"),
@@ -240,6 +248,7 @@ namespace AltarHelper
             ("#% chance to drop an additional Influence Scarab", "(1.6–3.2)%% chance to drop an additional Influence Scarab", "Minion"),
             ("#% chance to drop an additional Cartography Scarab", "(1.6–3.2)%% chance to drop an additional Cartography Scarab", "Minion"),
             ("#% chance to drop an additional Divination Scarab", "(1.6–3.2)%% chance to drop an additional Divination Scarab", "Minion"),
+            ("#% chance to drop an additional Kalguuran Scarab", "(1.6–3.2)%% chance to drop an additional Kalguuran Scarab", "Minion"),
             ("#% chance to drop an additional Anarchy Scarab", "(1.6–3.2)%% chance to drop an additional Anarchy Scarab", "Minion"),
             ("#% chance to drop an additional Harbinger Scarab", "(1.6–3.2)%% chance to drop an additional Harbinger Scarab", "Minion"),
             ("#% chance to drop an additional Miscellaneous Scarab", "(1.6–3.2)%% chance to drop an additional Miscellaneous Scarab", "Minion"),
@@ -249,6 +258,7 @@ namespace AltarHelper
             ("#% chance to drop an additional Domination Scarab", "(1.6–3.2)%% chance to drop an additional Domination Scarab", "Minion"),
             ("#% chance to drop an additional Essence Scarab", "(1.6–3.2)%% chance to drop an additional Essence Scarab", "Minion"),
             ("#% chance to drop an additional Reliquary Scarab", "(1.6–3.2)%% chance to drop an additional Reliquary Scarab", "Minion"),
+            ("#% chance to drop an additional Ancient Orb", "(1.6–3.2)%% chance to drop an additional Ancient Orb", "Minion"),
             ("-#% to Cold Resistance", "(-60–-40)%% to Cold Resistance", "Player"),
             ("-#% to Lightning Resistance", "(-60–-40)%% to Lightning Resistance", "Player"),
             ("-#% additional Physical Damage Reduction", "(-60–-40)%% additional Physical Damage Reduction", "Player"),
@@ -294,13 +304,10 @@ namespace AltarHelper
             ("#% increased Quantity of Items found in this Area", "(10–15)%% increased Quantity of Items found in this Area", "Player"),
             ("#% increased Rarity of Items found in this Area", "(5–10)%% increased Rarity of Items found in this Area", "Player"),
             ("#% increased Experience gain", "(8–12)%% increased Experience gain", "Player"),
-
         };
 
-
-
-
-
+        public static readonly IReadOnlyList<(string Id, string Name, string Type)> AltarTypesDistinct =
+            AltarTypes.GroupBy(t => t.Id, StringComparer.Ordinal).Select(g => g.First()).ToList();
     }
 
     public enum AffectedTarget

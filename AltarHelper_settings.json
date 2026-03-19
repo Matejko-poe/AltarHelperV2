@@ -1,0 +1,182 @@
+{
+  "ModTiers": {
+    "+#% to maximum Cold Resistance": 0,
+    "+#% to Cold Resistance": 0,
+    "+#% to maximum Lightning Resistance": 0,
+    "+#% to Lightning Resistance": 0,
+    "#% additional Physical Damage Reduction": 0,
+    "Final Boss drops # additional Divine Orbs": 10000,
+    "#% chance to drop an additional Divine Orb": 10000,
+    "Final Boss drops # additional Divination Cards which reward Currency": 500,
+    "Final Boss drops # additional Divination Cards which reward Basic Currency": 500,
+    "Final Boss drops # additional Divination Cards which reward League Currency": 500,
+    "Final Boss drops # additional Divination Scarabs": 400,
+    "#% chance to drop an additional Divination Card which rewards Currency": 500,
+    "#% chance to drop an additional Divination Card which rewards Basic Currency": 600,
+    "#% chance to drop an additional Divination Scarab": 500,
+    "Divination Cards dropped by slain Enemies have #% chance to be Duplicated": 550,
+    "#% chance to drop an additional Divination Card which rewards Unique Jewellery": 350,
+    "Final Boss drops # additional Divination Cards which reward Unique Jewellery": 200,
+    "#% chance to drop an additional Ambush Scarab": 600,
+    "Final Boss drops # additional Ambush Scarabs": 634,
+    "Scarabs dropped by slain Enemies have #% chance to be Duplicated": 400,
+    "#% chance to drop an additional Expedition Scarab": 400,
+    "Final Boss drops # additional Miscellaneous Scarabs": 350,
+    "Final Boss drops # additional Domination Scarabs": 550,
+    "Final Boss drops # additional Harvest Scarabs": 500,
+    "#% chance to drop an additional Harvest Scarab": 550,
+    "Final Boss drops # additional Exalted Orbs": 500,
+    "Final Boss drops # additional Regal Orbs": 300,
+    "Final Boss drops # additional Eldritch Chaos Orbs": 500,
+    "Final Boss drops # additional Eldritch Exalted Orbs": 500,
+    "Final Boss drops # additional Eldritch Orbs of Annulment": 500,
+    "Final Boss drops # additional Orbs of Scouring": 200,
+    "Final Boss drops # additional Orbs of Annulment": 450,
+    "Final Boss drops # additional Vaal Orbs": 75,
+    "#% chance to drop an additional Vaal Orb": 100,
+    "#% chance to drop an additional Orb of Regret": 300,
+    "#% chance to drop an additional Eldritch Chaos Orb": 500,
+    "#% chance to drop an additional Eldritch Orb of Annulment": 570,
+    "#% chance to drop an additional Chaos Orb": 550,
+    "#% chance to drop an additional Orb of Annulment": 600,
+    "Final Boss drops # additional Cartography Scarabs": 430,
+    "Basic Currency Items dropped by slain Enemies have #% chance to be Duplicated": 634,
+    "Maps dropped by slain Enemies have #% chance to be Duplicated": 527,
+    "Final Boss drops # additional Jeweller's Orbs": 0,
+    "#% chance to drop an additional Jeweller's Orb": 0,
+    "#% chance to drop an additional Orb of Alteration": 0,
+    "Final Boss drops # additional Orbs of Alteration": 0,
+    "#% chance to drop an additional Lesser Eldritch Ichor": 0,
+    "#% chance to drop an additional Greater Eldritch Ichor": 0,
+    "#% chance to drop an additional Grand Eldritch Ichor": 0,
+    "Final Boss drops # additional Lesser Eldritch Ichor": 0,
+    "Final Boss drops # additional Greater Eldritch Ichor": 0,
+    "Final Boss drops # additional Grand Eldritch Ichor": 0,
+    "Final Boss drops # additional Greater Eldritch Ichors": 0,
+    "Final Boss drops # additional Lesser Eldritch Ichors": 0,
+    "Final Boss drops # additional Grand Eldritch Ichors": 0,
+    "#% increased Quantity of Items found in this Area": 301,
+    "#% increased Rarity of Items found in this Area": 204,
+    "Final Boss drops # additional Incursion Scarabs": 0,
+    "#% chance to drop an additional Incursion Scarab": 155,
+    "Gain #% of Physical Damage as Extra Lightning Damage": 0,
+    "Nearby Enemies Gain #% of their Physical Damage as Extra Lightning Damage": 0,
+    "#% chance to drop an additional Divination Card which rewards a Unique Item": 300,
+    "#% chance to drop an additional Cartographer's Chisel": 350,
+    "Final Boss drops # additional Grand Eldritch Embers": 0,
+    "#% chance to drop an additional Grand Eldritch Ember": 0,
+    "#% chance to drop an additional Greater Eldritch Ember": 355,
+    "Take # Chaos Damage per second during any Flask Effect": -538,
+    "Projectiles are fired in random directions": -516,
+    "#% reduced Recovery Rate of Life, Mana and Energy Shield per Endurance Charge": -688,
+    "#% reduced Defences per Frenzy Charge": -1000,
+    "-# to Armour": -366,
+    "#% to Fire Resistance": -258,
+    "#% chance to be targeted by a Meteor when you use a Flask": -258,
+    "Non-Damaging Ailments you inflict are reflected back to you": -473,
+    "#% chance to drop an additional Gemcutter's Prism": 118,
+    "Enemies lose # Flask Charges every # seconds and cannot gain Flask Charges for # seconds after being Hit": 0,
+    "Drops Chilled Ground on Death, lasting # seconds": 0
+  },
+  "ModAlerts": {
+    "Final Boss drops # additional Divine Orbs": true,
+    "#% chance to drop an additional Divine Orb": true,
+    "Final Boss drops # additional Orbs of Alteration": false,
+    "#% chance to drop an additional Orb of Alteration": false,
+    "#% increased Quantity of Items found in this Area": false,
+    "Final Boss drops # additional Betrayal Scarabs": false,
+    "#% chance to drop an additional Betrayal Scarab": false,
+    "Final Boss drops # additional Divination Cards which reward Basic Currency": false,
+    "#% chance to drop an additional Divination Card which rewards Basic Currency": false,
+    "Projectiles are fired in random directions": false,
+    "+#% to maximum Cold Resistance": false,
+    "Drops Chilled Ground on Death, lasting # seconds": false,
+    "#% chance for Enemies to drop Chilled Ground when Hitting you, no more than once every 2 seconds": false
+  },
+  "ModAlertSounds": {
+    "Drops Chilled Ground on Death, lasting # seconds": "alert.wav"
+  },
+  "Enable": {
+    "Value": true,
+    "AttachedHotkey": {
+      "ValueV2": {
+        "ControllerKey": "None",
+        "ControllerModifierKey": "None",
+        "Key": "None",
+        "Win": false
+      }
+    }
+  },
+  "AltarSettings": {
+    "FrameThickness": {
+      "Value": 2
+    },
+    "SoundFile": {
+      "Value": "attention.wav"
+    },
+    "RepeatAlerts": {
+      "Value": true,
+      "AttachedHotkey": {
+        "ValueV2": {
+          "ControllerKey": "None",
+          "ControllerModifierKey": "None",
+          "Key": "None",
+          "Win": false
+        }
+      }
+    },
+    "DelayBetweenAlerts": {
+      "Value": 3000
+    },
+    "MinionColor": "90ee90ff",
+    "PlayerColor": "e0ffffff",
+    "BossColor": "add8e6ff",
+    "BadColor": "ff0000ff"
+  },
+  "DebugSettings": {
+    "DebugRawText": {
+      "Value": false,
+      "AttachedHotkey": {
+        "ValueV2": {
+          "ControllerKey": "None",
+          "ControllerModifierKey": "None",
+          "Key": "None",
+          "Win": false
+        }
+      }
+    },
+    "DebugBuffs": {
+      "Value": false,
+      "AttachedHotkey": {
+        "ValueV2": {
+          "ControllerKey": "None",
+          "ControllerModifierKey": "None",
+          "Key": "None",
+          "Win": false
+        }
+      }
+    },
+    "DebugDebuffs": {
+      "Value": false,
+      "AttachedHotkey": {
+        "ValueV2": {
+          "ControllerKey": "None",
+          "ControllerModifierKey": "None",
+          "Key": "None",
+          "Win": false
+        }
+      }
+    },
+    "DebugWeight": {
+      "Value": true,
+      "AttachedHotkey": {
+        "ValueV2": {
+          "ControllerKey": "None",
+          "ControllerModifierKey": "None",
+          "Key": "None",
+          "Win": false
+        }
+      }
+    }
+  }
+}
