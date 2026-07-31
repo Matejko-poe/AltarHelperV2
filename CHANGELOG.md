@@ -8,6 +8,7 @@ All notable changes to this project are documented here.
 
 - Public documentation, visual identity, installation guide, and contribution policy.
 - Detailed FAQ explaining scoring, weights, vetoes, modes, visual signals, sounds, presets, and saved settings.
+- In-plugin `FAQ / How it works` section available directly from the ExileCore settings panel.
 - Configurable score overlays, pick arrows, background highlights, target dots, presets, veto thresholds, and unknown-mod inspection.
 - Portable manual build through the `exapiPackage` MSBuild property.
 

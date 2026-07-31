@@ -35,6 +35,9 @@ namespace AltarHelperV2
         [JsonIgnore]
         public CustomNode UnknownModsDisplay { get; }
 
+        [JsonIgnore]
+        public CustomNode FAQ { get; }
+
         // Plain fields — ExileCore reflection doesn't warn on fields, only properties
         public Dictionary<string, int> ModTiers = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -252,6 +255,63 @@ namespace AltarHelperV2
             {
                 DrawDelegate = () => DrawUnknownModsDelegate?.Invoke()
             };
+
+            FAQ = new CustomNode
+            {
+                DrawDelegate = DrawFaq
+            };
+#pragma warning restore CA1416
+        }
+
+        private static void DrawFaq()
+        {
+#pragma warning disable CA1416
+            if (!ImGui.TreeNode("FAQ / How it works")) return;
+
+            ImGui.TextColored(new SN.Vector4(1f, 0.75f, 0.25f, 1f),
+                "Review the bundled weights before playing.");
+            ImGui.TextWrapped(
+                "They are the maintainer's personal defaults, not live prices or universal build recommendations.");
+            ImGui.Separator();
+
+            DrawFaqItem("How is the score calculated?",
+                "Score = total upside weight - total downside weight + target bonus. " +
+                "The highest valid positive score is highlighted; equal scores highlight both choices.");
+            DrawFaqItem("What do weights mean?",
+                "Positive values reward a modifier, negative values penalize danger, and 0 ignores it.");
+            DrawFaqItem("What are veto thresholds?",
+                "Positive Veto prioritizes one very valuable reward. Negative Veto marks one dangerous downside. " +
+                "A threshold of 0 disables that veto; Positive Veto wins when both apply.");
+            DrawFaqItem("What do the modes do?",
+                "Any scores all targets. Minions + Player focuses on Eldritch minions and player effects. " +
+                "Boss + Player focuses on the final map boss and player effects. F7 switches modes by default.");
+            DrawFaqItem("What do the colors mean?",
+                "Gold = positive-veto priority, yellow = recommended, orange = mixed reward and danger, red = avoid.");
+            DrawFaqItem("What do the dots mean?",
+                "Green = Eldritch minions, cyan = player, blue = final map boss. Set Dot size to 0 to hide them.");
+            DrawFaqItem("What are Alert and Clear?",
+                "Alert enables a sound rule for that modifier. Clear (X) removes its custom weight and returns it to 0.");
+            DrawFaqItem("How do presets work?",
+                "Presets assign groups of starting weights without clearing unrelated values. They do not use live prices.");
+            DrawFaqItem("What are Unknown Mods?",
+                "They are altar lines that were not matched to the bundled database. Use Find to locate a related entry.");
+            DrawFaqItem("Are existing settings overwritten?",
+                "No. ExileCore loads your saved local configuration. Defaults apply only to new or reset settings.");
+            DrawFaqItem("Does the plugin click an altar?",
+                "No. It only reads the visible choices, calculates a recommendation, and draws the overlay.");
+
+            ImGui.TreePop();
+#pragma warning restore CA1416
+        }
+
+        private static void DrawFaqItem(string question, string answer)
+        {
+#pragma warning disable CA1416
+            ImGui.TextColored(new SN.Vector4(0.45f, 0.8f, 1f, 1f), question);
+            ImGui.Indent();
+            ImGui.TextWrapped(answer);
+            ImGui.Unindent();
+            ImGui.Spacing();
 #pragma warning restore CA1416
         }
 
