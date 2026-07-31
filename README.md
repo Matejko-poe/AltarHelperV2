@@ -24,7 +24,7 @@
 
 1. Download or clone this repository into `Plugins/Source/AltarHelperV2` inside your ExileCore directory.
 2. Start ExileCore and wait for the plugin to compile.
-3. Open the ExileCore plugin menu, select `mt_AltarHelperV2`, and enable it.
+3. Open the ExileCore plugin menu, select `AltarHelperV2`, and enable it.
 4. Configure weights under **Mods & Weights (V2)** or apply one of the quick presets.
 
 For a manual build, install the .NET 10 SDK and run:

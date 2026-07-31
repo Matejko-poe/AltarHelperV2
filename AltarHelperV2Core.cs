@@ -38,7 +38,7 @@ namespace AltarHelperV2
 
         public override bool Initialise()
         {
-            Name = "mt_AltarHelperV2";
+            Name = "AltarHelperV2";
             LabelCache = new FrameCache<List<LabelOnGround>>(UpdateAltarLabelList);
             Settings.DrawUnknownModsDelegate = DrawUnknownModsSection;
             return true;

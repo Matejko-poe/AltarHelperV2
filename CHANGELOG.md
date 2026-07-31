@@ -22,3 +22,4 @@ All notable changes to this project are documented here.
 
 - New installations now start with the maintainer's tested weights, alert rules, display settings, hotkey, and sound configuration.
 - Added prominent in-plugin and README warnings that bundled values are personal defaults and must be reviewed by each user.
+- Removed the `mt_` prefix from the plugin name displayed in ExileCore.
