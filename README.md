@@ -127,10 +127,10 @@ The dot identifies who receives the altar modifier:
 
 Set **Dot size** to `0` to disable them.
 
-### What do `Snd`, `Clr`, and the checkbox mean?
+### What do `Alert`, `Clear`, and the checkbox mean?
 
-- **Snd** enables a sound notification for that modifier.
-- **Clr** contains the `X` button that removes the custom weight and returns the modifier to `0`.
+- **Alert** enables a sound notification for that modifier.
+- **Clear** contains the `X` button that removes the custom weight and returns the modifier to `0`.
 - A filled checkbox means the sound rule is enabled.
 
 Positive modifier alerts use **Sound — Positive**. Downside alerts and dangerous choices use **Sound — Negative**. A negative warning takes priority so both sounds do not play simultaneously. **Alert delay** prevents the same warning from firing every frame.

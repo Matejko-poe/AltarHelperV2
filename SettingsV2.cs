@@ -158,17 +158,17 @@ namespace AltarHelperV2
                     float tableHeight = 420f;
                     if (!ImGui.BeginTable("V2UnitConfigV2", 5,
                         ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders |
-                        ImGuiTableFlags.ScrollY | ImGuiTableFlags.ScrollX |
+                        ImGuiTableFlags.ScrollY |
                         ImGuiTableFlags.RowBg | ImGuiTableFlags.NoSavedSettings,
-                        new SN.Vector2(0, tableHeight), 760f))
+                        new SN.Vector2(-1, tableHeight)))
                         return;
 
                     ImGui.TableSetupScrollFreeze(0, 1);
                     ImGui.TableSetupColumn("Weight", ImGuiTableColumnFlags.WidthFixed, 220);
                     ImGui.TableSetupColumn("Mod", ImGuiTableColumnFlags.WidthStretch);
                     ImGui.TableSetupColumn("Type", ImGuiTableColumnFlags.WidthFixed, 60);
-                    ImGui.TableSetupColumn("Snd", ImGuiTableColumnFlags.WidthFixed, 54);
-                    ImGui.TableSetupColumn("Clr", ImGuiTableColumnFlags.WidthFixed, 48);
+                    ImGui.TableSetupColumn("Alert", ImGuiTableColumnFlags.WidthFixed, 70);
+                    ImGui.TableSetupColumn("Clear", ImGuiTableColumnFlags.WidthFixed, 60);
 
                     // Draw a plain header row. ImGui.TableHeadersRow adds per-column
                     // menu buttons which render as unreadable glyphs with ExileCore's font.
@@ -176,8 +176,8 @@ namespace AltarHelperV2
                     ImGui.TableNextColumn(); ImGui.TextUnformatted("Weight");
                     ImGui.TableNextColumn(); ImGui.TextUnformatted("Mod");
                     ImGui.TableNextColumn(); ImGui.TextUnformatted("Type");
-                    ImGui.TableNextColumn(); ImGui.TextUnformatted("Snd");
-                    ImGui.TableNextColumn(); ImGui.TextUnformatted("Clr");
+                    ImGui.TableNextColumn(); ImGui.TextUnformatted("Alert");
+                    ImGui.TableNextColumn(); ImGui.TextUnformatted("Clear");
 
                     var filtered = AltarModsConstants.AltarTypes
                         .Where(t => t.Name.Contains(unitFilter, StringComparison.InvariantCultureIgnoreCase));
