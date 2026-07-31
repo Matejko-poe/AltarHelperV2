@@ -68,6 +68,97 @@ Sound file names refer to files from ExileCore's `Sounds` directory. The plugin 
 
 Please include the ExileCore version, game version, `Errors.txt`, and a screenshot when reporting a bug.
 
+## FAQ — how does it work?
+
+### How is an altar option scored?
+
+The plugin reads both visible altar choices and normalizes changing numbers to `#` placeholders. It then looks up every modifier in the weights table:
+
+```text
+option score = total upside weight - total downside weight + target bonus
+```
+
+The option with the highest positive effective score is highlighted. An option with a score of zero is not recommended. If both valid options have the same score, both are highlighted.
+
+### What do positive and negative weights mean?
+
+- A positive weight increases the value of a reward.
+- A negative weight represents a dangerous or unwanted modifier.
+- `0` means the modifier has no influence on the decision.
+
+The same number can be wrong for another character. Review all bundled values for your build and farming strategy.
+
+### What are positive and negative veto thresholds?
+
+A veto looks at the strongest single modifier instead of only the final sum:
+
+- **Positive Veto** forces a sufficiently valuable choice to be treated as a priority. It takes precedence over a negative veto.
+- **Negative Veto** marks a choice as dangerous when one downside reaches the configured threshold.
+- A threshold of `0` disables that veto.
+
+Example: a Divine Orb reward can remain a priority even when the same option contains a moderate downside.
+
+### What do the three modes change?
+
+Press `F7` or change **Mode** in settings:
+
+- **Any** — scores every altar target.
+- **Minions + Player** — scores modifiers affecting Eldritch minions or the player.
+- **Boss + Player** — scores modifiers affecting the final map boss or the player.
+
+Player modifiers are included in both specialized modes because they affect the character directly. **Minion bonus weight** and **Boss bonus weight** can further favor those target types.
+
+### What do the colors mean?
+
+- **Gold:** positive-veto priority.
+- **Yellow:** recommended choice.
+- **Orange:** recommended option containing both valued rewards and downsides.
+- **Red:** dangerous option or negative veto.
+
+All colors, frame thickness, and background opacity are configurable.
+
+### What are the colored dots?
+
+The dot identifies who receives the altar modifier:
+
+- green — Eldritch minions;
+- cyan — player;
+- blue — final map boss.
+
+Set **Dot size** to `0` to disable them.
+
+### What do `Snd`, `Clr`, and the checkbox mean?
+
+- **Snd** enables a sound notification for that modifier.
+- **Clr** contains the `X` button that removes the custom weight and returns the modifier to `0`.
+- A filled checkbox means the sound rule is enabled.
+
+Positive modifier alerts use **Sound — Positive**. Downside alerts and dangerous choices use **Sound — Negative**. A negative warning takes priority so both sounds do not play simultaneously. **Alert delay** prevents the same warning from firing every frame.
+
+### What do the display options control?
+
+- **Show score overlay** — shows the calculated net score next to each choice.
+- **Show top mod name** — shows the highest-impact modifier explaining the score.
+- **Show TAKE arrow** — labels the recommended option.
+- **Show background highlight** — fills recommended or dangerous choices with a translucent color.
+- **Background highlight opacity** — controls the fill strength.
+
+### What do the presets do?
+
+Presets quickly assign a group of weights for a farming goal, such as Divine Orbs, Scarabs, or Eldritch Currency. Applying a preset does not clear unrelated configured weights. Preset values are only starting points and are not updated from live market prices.
+
+### What are Unknown Mods?
+
+This section lists altar text that was visible in game but could not be matched to the bundled modifier database. Use **Find** to search for the closest table entry. When reporting a missing modifier, include its complete raw text and the current game version.
+
+### Does changing the source defaults overwrite existing settings?
+
+No. ExileCore loads an existing local settings file when one is present. Bundled defaults apply to a new installation or after the plugin's saved settings are removed. Use **Reset All Weights** only when you intentionally want to clear configured weights.
+
+### Does the plugin automate altar selection?
+
+No. It reads the visible altar interface, calculates a recommendation, and draws an overlay. The player still makes the selection.
+
 ## Development
 
 The project targets `net10.0-windows` and x64. Contributions are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md). Release history is tracked in [CHANGELOG.md](CHANGELOG.md).
