@@ -15,6 +15,7 @@ All notable changes to this project are documented here.
 - Prevented malformed or empty altar labels from crashing the parser.
 - Corrected numeric normalization for decimals and signed values.
 - Prevented positive and negative alert sounds from playing simultaneously.
+- Fixed clipped `Alert` and `Reset` table headers appearing as stray glyphs beside checkboxes.
 
 ### Changed
 

@@ -166,8 +166,10 @@ namespace AltarHelperV2
                     ImGui.TableSetupColumn("Weight", ImGuiTableColumnFlags.WidthFixed, 220);
                     ImGui.TableSetupColumn("Mod", ImGuiTableColumnFlags.WidthStretch);
                     ImGui.TableSetupColumn("Type", ImGuiTableColumnFlags.WidthFixed, 60);
-                    ImGui.TableSetupColumn("Alert", ImGuiTableColumnFlags.WidthFixed, 45);
-                    ImGui.TableSetupColumn("Reset", ImGuiTableColumnFlags.WidthFixed, 40);
+                    // Keep action headers wider than their text. Narrow columns cause
+                    // ImGui's clipped-label markers to overlap and look like stray glyphs.
+                    ImGui.TableSetupColumn("Sound", ImGuiTableColumnFlags.WidthFixed, 70);
+                    ImGui.TableSetupColumn("Clear", ImGuiTableColumnFlags.WidthFixed, 60);
                     ImGui.TableHeadersRow();
 
                     var filtered = AltarModsConstants.AltarTypes
