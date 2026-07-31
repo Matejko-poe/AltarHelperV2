@@ -156,20 +156,19 @@ namespace AltarHelperV2
                     ImGui.TextColored(new SN.Vector4(0.7f, 0.9f, 0.7f, 1f), $"  ({configuredCount} configured)");
 
                     float tableHeight = 420f;
-                    if (!ImGui.BeginTable("V2UnitConfig", 5,
+                    if (!ImGui.BeginTable("V2UnitConfigV2", 5,
                         ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders |
-                        ImGuiTableFlags.ScrollY | ImGuiTableFlags.RowBg,
-                        new SN.Vector2(0, tableHeight)))
+                        ImGuiTableFlags.ScrollY | ImGuiTableFlags.ScrollX |
+                        ImGuiTableFlags.RowBg | ImGuiTableFlags.NoSavedSettings,
+                        new SN.Vector2(0, tableHeight), 760f))
                         return;
 
                     ImGui.TableSetupScrollFreeze(0, 1);
                     ImGui.TableSetupColumn("Weight", ImGuiTableColumnFlags.WidthFixed, 220);
                     ImGui.TableSetupColumn("Mod", ImGuiTableColumnFlags.WidthStretch);
                     ImGui.TableSetupColumn("Type", ImGuiTableColumnFlags.WidthFixed, 60);
-                    // Keep action headers wider than their text. Narrow columns cause
-                    // ImGui's clipped-label markers to overlap and look like stray glyphs.
-                    ImGui.TableSetupColumn("Sound", ImGuiTableColumnFlags.WidthFixed, 70);
-                    ImGui.TableSetupColumn("Clear", ImGuiTableColumnFlags.WidthFixed, 60);
+                    ImGui.TableSetupColumn("Snd", ImGuiTableColumnFlags.WidthFixed, 54);
+                    ImGui.TableSetupColumn("Clr", ImGuiTableColumnFlags.WidthFixed, 48);
                     ImGui.TableHeadersRow();
 
                     var filtered = AltarModsConstants.AltarTypes
