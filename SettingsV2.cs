@@ -16,7 +16,7 @@ namespace AltarHelperV2
     [SupportedOSPlatform("windows")]
     public class Settings : ISettings
     {
-        public ToggleNode Enable { get; set; } = new ToggleNode(false);
+        public ToggleNode Enable { get; set; } = new ToggleNode(true);
         public AltarSettings AltarSettings { get; set; } = new AltarSettings();
         public DisplaySettings DisplaySettings { get; set; } = new DisplaySettings();
         public DebugSettings DebugSettings { get; set; } = new DebugSettings();
@@ -36,8 +36,77 @@ namespace AltarHelperV2
         public CustomNode UnknownModsDisplay { get; }
 
         // Plain fields — ExileCore reflection doesn't warn on fields, only properties
-        public Dictionary<string, int> ModTiers = new();
-        public Dictionary<string, bool> ModAlerts = new();
+        public Dictionary<string, int> ModTiers = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Final Boss drops # additional Divine Orbs"] = 10000,
+            ["#% chance to drop an additional Divine Orb"] = 4000,
+            ["Final Boss drops # additional Grand Eldritch Ichors"] = 370,
+            ["Final Boss drops # additional Grand Eldritch Embers"] = 495,
+            ["#% chance to drop an additional Grand Eldritch Ichor"] = 148,
+            ["#% chance to drop an additional Grand Eldritch Ember"] = 198,
+            ["Final Boss drops # additional Eldritch Orbs of Annulment"] = 1000,
+            ["Final Boss drops # additional Eldritch Exalted Orbs"] = 1235,
+            ["Final Boss drops # additional Eldritch Chaos Orbs"] = 544,
+            ["#% chance to drop an additional Eldritch Orb of Annulment"] = 740,
+            ["#% chance to drop an additional Eldritch Exalted Orb"] = 490,
+            ["#% chance to drop an additional Eldritch Chaos Orb"] = 960,
+            ["Final Boss drops # additional Greater Eldritch Ichors"] = 125,
+            ["Final Boss drops # additional Greater Eldritch Embers"] = 125,
+            ["#% chance to drop an additional Greater Eldritch Ichor"] = 50,
+            ["#% chance to drop an additional Greater Eldritch Ember"] = 50,
+            ["Final Boss drops # additional Orbs of Unmaking"] = 50,
+            ["#% chance to drop an additional Orb of Unmaking"] = 135,
+            ["Take # Chaos Damage per second during any Flask Effect"] = -9000,
+            ["Projectiles are fired in random directions"] = 181,
+            ["#% chance to be targeted by a Meteor when you use a Flask"] = -5000,
+            ["Curses you inflict are reflected back to you"] = -3000,
+            ["Basic Currency Items dropped by slain Enemies have #% chance to be Duplicated"] = 170,
+            ["#% chance to drop an additional Chaos Orb"] = 205,
+            ["Final Boss drops # additional Ultimatum Scarabs"] = 1230,
+            ["#% chance to drop an additional Ultimatum Scarab"] = 490,
+            ["Final Boss drops # additional Breach Scarabs"] = 615,
+            ["#% chance to drop an additional Breach Scarab"] = 246,
+            ["Final Boss drops # additional Delirium Scarabs"] = 615,
+            ["#% chance to drop an additional Delirium Scarab"] = 246,
+            ["Final Boss drops # additional Legion Scarabs"] = 490,
+            ["#% chance to drop an additional Legion Scarab"] = 196,
+            ["Final Boss drops # additional Essence Scarabs"] = 615,
+            ["#% chance to drop an additional Essence Scarab"] = 246,
+            ["Final Boss drops # additional Incursion Scarabs"] = 615,
+            ["#% chance to drop an additional Incursion Scarab"] = 246,
+            ["Final Boss drops # additional Beyond Scarabs"] = 370,
+            ["#% chance to drop an additional Beyond Scarab"] = 148,
+            ["Final Boss drops # additional Harvest Scarabs"] = 615,
+            ["Final Boss drops # additional Ritual Scarabs"] = 615,
+            ["Final Boss drops # additional Ambush Scarabs"] = 615,
+            ["Scarabs dropped by slain Enemies have #% chance to be Duplicated"] = 918,
+            ["#% reduced Recovery Rate of Life, Mana and Energy Shield per Endurance Charge"] = -18,
+            ["Divination Cards dropped by slain Enemies have #% chance to be Duplicated"] = 696,
+            ["#% increased Quantity of Items found in this Area"] = 520,
+            ["Unique Items dropped by slain Enemies have #% chance to be Duplicated"] = 135,
+            ["#% to Critical Strike Multiplier per Power Charge"] = 287,
+            ["#% increased Rarity of Items found in this Area"] = 41,
+            ["#% chance to drop an additional Orb of Annulment"] = 1000,
+            ["#% chance to drop an additional Exalted Orb"] = 848,
+            ["Final Boss drops # additional Orbs of Annulment"] = 1000,
+        };
+
+        public Dictionary<string, bool> ModAlerts = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Final Boss drops # additional Eldritch Chaos Orbs"] = true,
+            ["#% chance to drop an additional Eldritch Chaos Orb"] = true,
+            ["#% chance to drop an additional Chaos Orb"] = true,
+            ["Final Boss drops # additional Divine Orbs"] = true,
+            ["#% chance to drop an additional Divine Orb"] = true,
+            ["Take # Chaos Damage per second during any Flask Effect"] = true,
+            ["#% chance to be targeted by a Meteor when you use a Flask"] = true,
+            ["#% reduced Recovery Rate of Life, Mana and Energy Shield per Endurance Charge"] = false,
+            ["#% to Critical Strike Multiplier per Power Charge"] = true,
+            ["#% increased Rarity of Items found in this Area"] = false,
+            ["Projectiles are fired in random directions"] = false,
+            ["Final Boss drops # additional Eldritch Orbs of Annulment"] = true,
+            ["#% chance to drop an additional Orb of Annulment"] = true,
+        };
 
         public Settings()
         {
@@ -330,7 +399,7 @@ namespace AltarHelperV2
         public TextNode PositiveSoundFile { get; set; } = new TextNode("alert.wav");
 
         [Menu("Sound - Negative")]
-        public TextNode NegativeSoundFile { get; set; } = new TextNode("alert.wav");
+        public TextNode NegativeSoundFile { get; set; } = new TextNode("warning.wav");
 
         [Menu("Alert delay (ms)")]
         public RangeNode<int> DelayBetweenAlerts { get; set; } = new RangeNode<int>(3000, 1000, 10000);

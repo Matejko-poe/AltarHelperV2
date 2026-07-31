@@ -15,3 +15,7 @@ All notable changes to this project are documented here.
 - Prevented malformed or empty altar labels from crashing the parser.
 - Corrected numeric normalization for decimals and signed values.
 - Prevented positive and negative alert sounds from playing simultaneously.
+
+### Changed
+
+- New installations now start with the maintainer's tested weights, alert rules, display settings, hotkey, and sound configuration.
