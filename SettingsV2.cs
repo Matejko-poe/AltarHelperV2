@@ -169,7 +169,15 @@ namespace AltarHelperV2
                     ImGui.TableSetupColumn("Type", ImGuiTableColumnFlags.WidthFixed, 60);
                     ImGui.TableSetupColumn("Snd", ImGuiTableColumnFlags.WidthFixed, 54);
                     ImGui.TableSetupColumn("Clr", ImGuiTableColumnFlags.WidthFixed, 48);
-                    ImGui.TableHeadersRow();
+
+                    // Draw a plain header row. ImGui.TableHeadersRow adds per-column
+                    // menu buttons which render as unreadable glyphs with ExileCore's font.
+                    ImGui.TableNextRow();
+                    ImGui.TableNextColumn(); ImGui.TextUnformatted("Weight");
+                    ImGui.TableNextColumn(); ImGui.TextUnformatted("Mod");
+                    ImGui.TableNextColumn(); ImGui.TextUnformatted("Type");
+                    ImGui.TableNextColumn(); ImGui.TextUnformatted("Snd");
+                    ImGui.TableNextColumn(); ImGui.TextUnformatted("Clr");
 
                     var filtered = AltarModsConstants.AltarTypes
                         .Where(t => t.Name.Contains(unitFilter, StringComparison.InvariantCultureIgnoreCase));

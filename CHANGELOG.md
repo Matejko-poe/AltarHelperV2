@@ -16,7 +16,7 @@ All notable changes to this project are documented here.
 - Prevented malformed or empty altar labels from crashing the parser.
 - Corrected numeric normalization for decimals and signed values.
 - Prevented positive and negative alert sounds from playing simultaneously.
-- Fixed action headers appearing as stray glyphs by preventing ImGui from shrinking or restoring stale column widths.
+- Replaced ImGui's automatic table headers with a plain row so unsupported menu glyphs cannot appear beside `Snd` and `Clr`.
 
 ### Changed
 
