@@ -51,7 +51,10 @@ Press `F7` by default to switch between **Any**, **Minions + Player**, and **Bos
 
 ## Configuration notes
 
-Weights are personal priorities, not live prices. A positive value rewards a modifier; a negative value penalizes it. The bundled presets are starting points and may become outdated as the economy changes. Set a positive veto threshold for rewards you never want to miss, and a negative veto threshold for modifiers your build cannot safely run.
+> [!WARNING]
+> The bundled weights and alert rules are the maintainer's personal configuration. Review every configured value before playing: priorities depend on your build, risk tolerance, farming strategy, and the current league economy.
+
+Weights are personal priorities, not live prices. A positive value rewards a modifier; a negative value penalizes it. The bundled defaults and presets are starting points and may become outdated as the economy changes. Set a positive veto threshold for rewards you never want to miss, and a negative veto threshold for modifiers your build cannot safely run.
 
 Sound file names refer to files from ExileCore's `Sounds` directory. The plugin reads only the visible altar UI and stores settings locally; it does not send telemetry or make network requests.
 

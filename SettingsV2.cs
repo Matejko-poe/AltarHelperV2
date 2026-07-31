@@ -120,6 +120,12 @@ namespace AltarHelperV2
                 {
                     if (!ImGui.TreeNode("Mods & Weights (V2)")) return;
 
+                    ImGui.TextColored(new SN.Vector4(1f, 0.65f, 0.2f, 1f),
+                        "IMPORTANT: bundled weights are the maintainer's personal defaults.");
+                    ImGui.TextColored(new SN.Vector4(1f, 0.8f, 0.45f, 1f),
+                        "Review every configured value for your build and the current economy.");
+                    ImGui.Separator();
+
                     ImGui.TextColored(new SN.Vector4(0.9f, 0.8f, 0.2f, 1f),
                         "Slider > 0 = good mod | < 0 or in downside section = penalty to net weight");
                     ImGui.TextColored(new SN.Vector4(0.7f, 1f, 0.7f, 1f),

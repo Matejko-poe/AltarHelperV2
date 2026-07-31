@@ -19,3 +19,4 @@ All notable changes to this project are documented here.
 ### Changed
 
 - New installations now start with the maintainer's tested weights, alert rules, display settings, hotkey, and sound configuration.
+- Added prominent in-plugin and README warnings that bundled values are personal defaults and must be reviewed by each user.
