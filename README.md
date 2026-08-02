@@ -8,8 +8,18 @@
   A visual ExileCore overlay that scores Eldritch Altar options and makes the best choice immediately readable.
 </p>
 
+<p align="center">
+  Extended fork of <a href="https://github.com/bruno105/AltarHelper">bruno105/AltarHelper</a>.
+</p>
+
 > [!IMPORTANT]
 > This is an independent, community-made project. It is not affiliated with or endorsed by Grinding Gear Games.
+
+## Origin and credits
+
+Altar Helper V2 is an expanded fork of the original [AltarHelper by bruno105](https://github.com/bruno105/AltarHelper). The original plugin introduced the weighted Primordial Altar comparison that this version builds upon. Thanks to bruno105 and the original contributors, including the testing and modifier-configuration work credited upstream.
+
+This fork adds a redesigned visual overlay and settings UI, target modes, veto rules, presets, alerts, unknown-mod inspection, parser hardening, documentation, and ExileCore 3.28 compatibility work.
 
 ## What it does
 
@@ -163,6 +173,6 @@ No. It reads the visible altar interface, calculates a recommendation, and draws
 
 The project targets `net10.0-windows` and x64. Contributions are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md). Release history is tracked in [CHANGELOG.md](CHANGELOG.md).
 
-## License
+## License status
 
-Released under the [MIT License](LICENSE).
+The upstream repository does not currently declare an open-source license. This fork therefore does not grant an MIT license over the inherited code. Rights to the original code remain with its respective author(s); contributions to this fork remain with their respective author(s) unless separately licensed.
