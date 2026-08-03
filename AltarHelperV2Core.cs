@@ -320,7 +320,7 @@ namespace AltarHelperV2
 
             foreach (var modText in sel.Upsides.Concat(sel.Downsides))
             {
-                var norm = Regex.Replace(modText, @"((\d+)(?:.\d)|\d+)", "#");
+                var norm = AltarTextNormalizer.NormalizeNumbers(modText);
                 int w = Math.Abs(Settings.GetModTier(norm));
                 if (w > bestWeight)
                 {
@@ -478,14 +478,14 @@ namespace AltarHelperV2
 
             foreach (string entry in upsides)
             {
-                var norm = NormalizeNumbers(entry);
+                var norm = AltarTextNormalizer.NormalizeNumbers(entry);
                 if (Settings.DebugSettings.DebugBuffs) DebugWindow.LogMsg($"[V2 Upside] {norm}");
                 var fe = GetEntry(norm, isUpside: true);
                 upsideEntries.Add(fe);
             }
             foreach (string entry in downsides)
             {
-                var norm = NormalizeNumbers(entry);
+                var norm = AltarTextNormalizer.NormalizeNumbers(entry);
                 if (Settings.DebugSettings.DebugDebuffs) DebugWindow.LogMsg($"[V2 Downside] {norm}");
                 var fe = GetEntry(norm, isUpside: false);
                 downsideEntries.Add(fe);
@@ -517,7 +517,7 @@ namespace AltarHelperV2
 
             var modNorm = mod.Contains('(') && mod.Contains(')')
                 ? Regex.Replace(mod, @"\([^()]*\)", "#")
-                : NormalizeNumbers(mod);
+                : AltarTextNormalizer.NormalizeNumbers(mod);
 
             var altarEntry = AltarModsConstants.AltarTypes
                 .FirstOrDefault(t => t.Id.Contains(mod, StringComparison.InvariantCultureIgnoreCase));
@@ -536,9 +536,6 @@ namespace AltarHelperV2
                 Alert  = modAlert
             };
         }
-
-        private static string NormalizeNumbers(string value) =>
-            Regex.Replace(value ?? string.Empty, @"[-+]?\d+(?:[.,]\d+)?", "#");
 
         // ============================================================
         // Data models

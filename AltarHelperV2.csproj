@@ -14,6 +14,7 @@
     <ExapiPackage Condition="'$(ExapiPackage)' == '' and Exists('..\..\..\ExileCore.dll')">..\..\..</ExapiPackage>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="tests\**\*.cs" />
     <PackageReference Include="ImGui.NET" Version="1.90.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />

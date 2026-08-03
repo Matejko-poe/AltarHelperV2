@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [1.0.1] - 2026-08-03
+
+### Fixed
+
+- Preserved leading `-` and `+` signs while normalizing altar values, so configured negative player modifiers now contribute to downside weight.
+
 ## [1.0.0] - 2026-07-31
 
 ### Added
