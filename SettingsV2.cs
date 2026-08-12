@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Runtime.Versioning;
 using System.Windows.Forms;
 using ExileCore.Shared.Attributes;
@@ -39,6 +40,13 @@ namespace AltarHelperV2
         public CustomNode FAQ { get; }
 
         // Plain fields — ExileCore reflection doesn't warn on fields, only properties
+        //
+        // Replace, not merge. ExileCore deserializes settings with
+        // ObjectCreationHandling.Auto, which merges the saved JSON *into* the
+        // dictionary this constructor already filled. Under Auto a saved file can
+        // only overwrite a key, never drop one, so every mod listed below came back
+        // at its default weight on the next launch after being cleared.
+        [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
         public Dictionary<string, int> ModTiers = new(StringComparer.OrdinalIgnoreCase)
         {
             ["Final Boss drops # additional Divine Orbs"] = 10000,
@@ -94,6 +102,7 @@ namespace AltarHelperV2
             ["Final Boss drops # additional Orbs of Annulment"] = 1000,
         };
 
+        [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
         public Dictionary<string, bool> ModAlerts = new(StringComparer.OrdinalIgnoreCase)
         {
             ["Final Boss drops # additional Eldritch Chaos Orbs"] = true,
@@ -110,6 +119,20 @@ namespace AltarHelperV2
             ["Final Boss drops # additional Eldritch Orbs of Annulment"] = true,
             ["#% chance to drop an additional Orb of Annulment"] = true,
         };
+
+        // Replace hands back a plain Dictionary, dropping the case-insensitive
+        // comparer the field initializer set. Altar text is matched against these
+        // keys, so restore it.
+        [OnDeserialized]
+        private void RestoreComparers(StreamingContext _)
+        {
+            ModTiers = ModTiers == null
+                ? new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+                : new Dictionary<string, int>(ModTiers, StringComparer.OrdinalIgnoreCase);
+            ModAlerts = ModAlerts == null
+                ? new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase)
+                : new Dictionary<string, bool>(ModAlerts, StringComparer.OrdinalIgnoreCase);
+        }
 
         public Settings()
         {
@@ -182,7 +205,11 @@ namespace AltarHelperV2
                     ImGui.TableNextColumn(); ImGui.TextUnformatted("Alert");
                     ImGui.TableNextColumn(); ImGui.TextUnformatted("Clear");
 
+                    // Several ids appear twice in AltarTypes (same normalized key,
+                    // different roll ranges). Two rows would share one weight key and
+                    // one ImGui id, so collapse them to a single row.
                     var filtered = AltarModsConstants.AltarTypes
+                        .DistinctBy(t => t.Id)
                         .Where(t => t.Name.Contains(unitFilter, StringComparison.InvariantCultureIgnoreCase));
 
                     foreach (var (id, name, type) in filtered)
