@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+### Fixed
+
+- Cleared weights and alerts now stay cleared. ExileCore deserializes plugin settings with `ObjectCreationHandling.Auto`, which merged the saved file *into* the bundled defaults instead of replacing them, so any modifier carrying a bundled default reappeared at that default on the next launch after being cleared with `X` or `Reset All Weights`. Modifiers without a bundled default were unaffected, which made the failure look arbitrary.
+- Collapsed duplicate rows in **Mods & Weights (V2)**. Thirty-five ids appear twice in `AltarTypes` because separate roll ranges normalize to one key, and the duplicate rows shared a single weight entry and a single ImGui widget id.
+
 ## [1.0.1] - 2026-08-03
 
 ### Fixed
