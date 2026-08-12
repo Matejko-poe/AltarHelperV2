@@ -205,7 +205,11 @@ namespace AltarHelperV2
                     ImGui.TableNextColumn(); ImGui.TextUnformatted("Alert");
                     ImGui.TableNextColumn(); ImGui.TextUnformatted("Clear");
 
+                    // Several ids appear twice in AltarTypes (same normalized key,
+                    // different roll ranges). Two rows would share one weight key and
+                    // one ImGui id, so collapse them to a single row.
                     var filtered = AltarModsConstants.AltarTypes
+                        .DistinctBy(t => t.Id)
                         .Where(t => t.Name.Contains(unitFilter, StringComparison.InvariantCultureIgnoreCase));
 
                     foreach (var (id, name, type) in filtered)
