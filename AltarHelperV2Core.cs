@@ -41,7 +41,30 @@ namespace AltarHelperV2
             Name = "AltarHelperV2";
             LabelCache = new FrameCache<List<LabelOnGround>>(UpdateAltarLabelList);
             Settings.DrawUnknownModsDelegate = DrawUnknownModsSection;
+
+            // Live poe.ninja prices come from the Ninja Price plugin cache (no network access here)
+            _priceFeed.Initialise(DirectoryFullName);
+            Settings.RefreshPricesNow = () => RefreshPrices(true);
+            RefreshPrices(true);
             return true;
+        }
+
+        private readonly AltarPriceFeed _priceFeed = new();
+
+        private void RefreshPrices(bool force)
+        {
+            try
+            {
+                if (_priceFeed.Refresh(force) && _priceFeed.HasData)
+                    Settings.ApplyLivePrices(_priceFeed.Prices, _priceFeed.Status);
+                else if (force)
+                    Settings.PriceStatus = _priceFeed.Status;
+                if (Settings.PriceStatus.Length == 0) Settings.PriceStatus = _priceFeed.Status;
+            }
+            catch (Exception ex)
+            {
+                Settings.PriceStatus = "Price update failed: " + ex.Message;
+            }
         }
 
         // ============================================================
@@ -125,6 +148,8 @@ namespace AltarHelperV2
                 DebugWindow.LogMsg($"[AltarHelperV2] Mode: {ModeName(Settings.AltarSettings.SwitchMode.Value)}");
             }
 
+            if (Settings.AutoUpdatePrices) RefreshPrices(false);
+
             if (!CanRun()) return null;
             CompareWeights();
             return null;
@@ -141,6 +166,8 @@ namespace AltarHelperV2
             int posVetoThresh = Settings.AltarSettings.PositiveVetoThreshold.Value;
             int negVetoThresh = Settings.AltarSettings.NegativeVetoThreshold.Value;
             int alertMinWeight = Settings.AltarSettings.AlertMinNetWeight.Value;
+            // An option is only recommended when its net weight reaches this bar (0 = any positive net)
+            int minPick = Math.Max(1, Settings.AltarSettings.MinPickWeight.Value);
             int dotSize = Settings.AltarSettings.DotSize.Value;
             int frameThick = Settings.AltarSettings.FrameThickness.Value;
 
@@ -204,8 +231,8 @@ namespace AltarHelperV2
                 }
 
                 // Determine best option
-                bool topCanBeGood = !topEffBad && topEffWeight > 0;
-                bool bottomCanBeGood = !bottomEffBad && bottomEffWeight > 0;
+                bool topCanBeGood = !topEffBad && topEffWeight >= minPick;
+                bool bottomCanBeGood = !bottomEffBad && bottomEffWeight >= minPick;
                 bool pickTop = topCanBeGood && (!bottomCanBeGood || topEffWeight >= bottomEffWeight);
                 bool pickBottom = bottomCanBeGood && (!topCanBeGood || bottomEffWeight > topEffWeight);
                 bool tie = topCanBeGood && bottomCanBeGood && topEffWeight == bottomEffWeight;

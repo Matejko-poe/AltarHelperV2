@@ -39,60 +39,19 @@ namespace AltarHelperV2
         public CustomNode FAQ { get; }
 
         // Plain fields — ExileCore reflection doesn't warn on fields, only properties
-        public Dictionary<string, int> ModTiers = new(StringComparer.OrdinalIgnoreCase)
-        {
-            ["Final Boss drops # additional Divine Orbs"] = 10000,
-            ["#% chance to drop an additional Divine Orb"] = 4000,
-            ["Final Boss drops # additional Grand Eldritch Ichors"] = 370,
-            ["Final Boss drops # additional Grand Eldritch Embers"] = 495,
-            ["#% chance to drop an additional Grand Eldritch Ichor"] = 148,
-            ["#% chance to drop an additional Grand Eldritch Ember"] = 198,
-            ["Final Boss drops # additional Eldritch Orbs of Annulment"] = 1000,
-            ["Final Boss drops # additional Eldritch Exalted Orbs"] = 1235,
-            ["Final Boss drops # additional Eldritch Chaos Orbs"] = 544,
-            ["#% chance to drop an additional Eldritch Orb of Annulment"] = 740,
-            ["#% chance to drop an additional Eldritch Exalted Orb"] = 490,
-            ["#% chance to drop an additional Eldritch Chaos Orb"] = 960,
-            ["Final Boss drops # additional Greater Eldritch Ichors"] = 125,
-            ["Final Boss drops # additional Greater Eldritch Embers"] = 125,
-            ["#% chance to drop an additional Greater Eldritch Ichor"] = 50,
-            ["#% chance to drop an additional Greater Eldritch Ember"] = 50,
-            ["Final Boss drops # additional Orbs of Unmaking"] = 50,
-            ["#% chance to drop an additional Orb of Unmaking"] = 135,
-            ["Take # Chaos Damage per second during any Flask Effect"] = -9000,
-            ["Projectiles are fired in random directions"] = 181,
-            ["#% chance to be targeted by a Meteor when you use a Flask"] = -5000,
-            ["Curses you inflict are reflected back to you"] = -3000,
-            ["Basic Currency Items dropped by slain Enemies have #% chance to be Duplicated"] = 170,
-            ["#% chance to drop an additional Chaos Orb"] = 205,
-            ["Final Boss drops # additional Ultimatum Scarabs"] = 1230,
-            ["#% chance to drop an additional Ultimatum Scarab"] = 490,
-            ["Final Boss drops # additional Breach Scarabs"] = 615,
-            ["#% chance to drop an additional Breach Scarab"] = 246,
-            ["Final Boss drops # additional Delirium Scarabs"] = 615,
-            ["#% chance to drop an additional Delirium Scarab"] = 246,
-            ["Final Boss drops # additional Legion Scarabs"] = 490,
-            ["#% chance to drop an additional Legion Scarab"] = 196,
-            ["Final Boss drops # additional Essence Scarabs"] = 615,
-            ["#% chance to drop an additional Essence Scarab"] = 246,
-            ["Final Boss drops # additional Incursion Scarabs"] = 615,
-            ["#% chance to drop an additional Incursion Scarab"] = 246,
-            ["Final Boss drops # additional Beyond Scarabs"] = 370,
-            ["#% chance to drop an additional Beyond Scarab"] = 148,
-            ["Final Boss drops # additional Harvest Scarabs"] = 615,
-            ["Final Boss drops # additional Ritual Scarabs"] = 615,
-            ["Final Boss drops # additional Ambush Scarabs"] = 615,
-            ["Scarabs dropped by slain Enemies have #% chance to be Duplicated"] = 918,
-            ["#% reduced Recovery Rate of Life, Mana and Energy Shield per Endurance Charge"] = -18,
-            ["Divination Cards dropped by slain Enemies have #% chance to be Duplicated"] = 696,
-            ["#% increased Quantity of Items found in this Area"] = 520,
-            ["Unique Items dropped by slain Enemies have #% chance to be Duplicated"] = 135,
-            ["#% to Critical Strike Multiplier per Power Charge"] = 287,
-            ["#% increased Rarity of Items found in this Area"] = 41,
-            ["#% chance to drop an additional Orb of Annulment"] = 1000,
-            ["#% chance to drop an additional Exalted Orb"] = 848,
-            ["Final Boss drops # additional Orbs of Annulment"] = 1000,
-        };
+        public Dictionary<string, int> ModTiers = BuildDefaultTiers();
+
+        // Weights the user moved by hand: automatic price updates never overwrite these.
+        public HashSet<string> ManualWeights = new(StringComparer.OrdinalIgnoreCase);
+
+        // Automatic reward weights from live poe.ninja prices (Ninja Price plugin cache)
+        public bool AutoUpdatePrices = true;
+
+        [JsonIgnore]
+        public string PriceStatus = "";
+
+        [JsonIgnore]
+        public Action RefreshPricesNow = () => { };
 
         public Dictionary<string, bool> ModAlerts = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -141,14 +100,34 @@ namespace AltarHelperV2
                     if (ImGui.Button("Divine Orb Focus"))
                         ApplyPreset_DivineFocus();
                     ImGui.SameLine();
-                    if (ImGui.Button("Scarab Focus"))
-                        ApplyPreset_ScarabFocus();
+                    if (ImGui.Button("Thread Focus"))
+                        ApplyPreset_ThreadFocus();
                     ImGui.SameLine();
                     if (ImGui.Button("Eldritch Currency"))
                         ApplyPreset_EldritchFocus();
                     ImGui.SameLine();
+                    if (ImGui.Button("Armour Build"))
+                        ApplyPreset_ArmourBuild();
+                    ImGui.SameLine();
+                    if (ImGui.Button("[Test] Champion (Bannerman)"))
+                        ApplyPreset_ChampionBuild();
+                    if (ImGui.IsItemHovered())
+                        ImGui.SetTooltip("Preset testowy: profil dostosowany pod build Bannerman Champion (melee physical, armour).");
+                    ImGui.SameLine();
                     if (ImGui.Button("Reset All Weights"))
+                    {
                         ModTiers.Clear();
+                        ManualWeights.Clear();
+                    }
+
+                    ImGui.Checkbox("[Test] Auto-update reward weights from poe.ninja prices", ref AutoUpdatePrices);
+                    ImGui.SameLine();
+                    if (ImGui.Button("Refresh prices now"))
+                        RefreshPricesNow();
+                    ImGui.TextColored(new SN.Vector4(0.6f, 0.85f, 1f, 1f),
+                        "Prices: " + (PriceStatus.Length > 0 ? PriceStatus : "built-in (Covens 2026-11-17)"));
+                    ImGui.TextColored(new SN.Vector4(0.7f, 0.7f, 0.7f, 1f),
+                        "Divine Orb is always the top weight. Weights you move by hand are not overwritten.");
 
                     ImGui.Separator();
                     ImGui.InputTextWithHint("##V2UnitFilter", "Search mods...", ref unitFilter, 200);
@@ -201,7 +180,10 @@ namespace AltarHelperV2
 
                         ImGui.SetNextItemWidth(185);
                         if (ImGui.SliderInt("##w", ref currentValue, -1000, 1000))
+                        {
                             ModTiers[id] = currentValue;
+                            ManualWeights.Add(id);
+                        }
 
                         // Visual weight bar
                         float barWidth = 185f;
@@ -242,7 +224,10 @@ namespace AltarHelperV2
                         // Reset column
                         ImGui.TableNextColumn();
                         if (isConfigured && ImGui.SmallButton("X"))
+                        {
                             ModTiers.Remove(id);
+                            ManualWeights.Remove(id);
+                        }
 
                         ImGui.PopID();
                     }
@@ -292,7 +277,7 @@ namespace AltarHelperV2
             DrawFaqItem("What are Alert and Clear?",
                 "Alert enables a sound rule for that modifier. Clear (X) removes its custom weight and returns it to 0.");
             DrawFaqItem("How do presets work?",
-                "Presets assign groups of starting weights without clearing unrelated values. They do not use live prices.");
+                "Presets assign groups of starting weights without clearing unrelated values. Reward weights come from poe.ninja prices (Divine = top weight). With auto-update on, the plugin re-prices them from the Ninja Price plugin cache whenever it changes; weights you move by hand are kept. Armour Build also adds small negative weights to defensive downsides, so only clearly worthwhile nodes are taken. [Test] Champion (Bannerman) is tailored to a melee physical armour character.");
             DrawFaqItem("What are Unknown Mods?",
                 "They are altar lines that were not matched to the bundled database. Use Find to locate a related entry.");
             DrawFaqItem("Are existing settings overwritten?",
@@ -316,136 +301,315 @@ namespace AltarHelperV2
         }
 
         // ============================================================
-        // Presets — weights based on poe.ninja prices (Mirage, 2026-03-15)
-        // Scale: Divine Orb = 242c → weight 10000 (cap)
-        //        => 1 chaos ≈ 41 weight units
+        // Price-based weights - poe.ninja, league "Covens", 2026-11-17
+        // (read from the Ninja Price / Get-Chaos-Value cache: NinjaData\Covens\*.json)
         //
-        // Boss drops avg 3 items:
-        //   Divine Orb:            242c × 3 = 726c → 10000 (capped)
-        //   Eldritch Chaos Orb:   19.4c × 3 = 58c  → 2400
-        //   Eldritch Annulment:   15.0c × 3 = 45c  → 1850
-        //   Eldritch Exalted:     10.0c × 3 = 30c  → 1235
-        //   Grand Ichor:           3.0c × 3 =  9c  →  370
-        //   Grand Ember:           4.0c × 3 = 12c  →  495
-        //   Greater Ichor/Ember:   1.0c × 3 =  3c  →  125
-        //   Orb of Unmaking:       0.4c × 3 =  1c  →   50
+        // Scale: Divine Orb (153.9c) is ALWAYS the top reward: a boss drop averages 3 items,
+        //        3 x 153.9c = 462c -> weight 10000 (hard cap, nothing can exceed it).
+        //        => 1 chaos = ~21.66 weight units.
+        //   boss drop weight   = chaos price x 3 x 21.66      (2-4 items, avg 3)
+        //   minion drop weight = 40% of the boss weight        (low chance per kill)
         //
-        // % chance drops ≈ 40% of boss drop value (per-kill accumulated)
-        //
-        // Presets only SET their own mods — they do NOT clear existing weights.
+        // These numbers are only the built-in fallback; live prices from the Ninja Price cache replace them.
         // ============================================================
+        private const double DivineChaos = 153.9;   // built-in fallback, used when no live prices exist
+        private const int TopWeight = 10000;
 
-        private void ApplyPreset_DivineFocus()
+        // Live prices (item name -> chaos) from the Ninja Price cache; empty = use the built-in table
+        private Dictionary<string, double> _livePrices = new(StringComparer.OrdinalIgnoreCase);
+
+        private double CurrentDivine =>
+            _livePrices.TryGetValue("Divine Orb", out var d) && d > 0 ? d : DivineChaos;
+
+        private double PriceOf(string name, double fallback) =>
+            _livePrices.TryGetValue(name, out var v) && v > 0 ? v : fallback;
+
+        private enum RewardGroup { Basic, Divine, Eldritch, Thread }
+
+        // (singular name used by minion mods, plural used by boss mods, chaos price, group)
+        private static readonly (string One, string Many, double Chaos, RewardGroup Group)[] PricedRewards =
         {
-            // === Divine Orb (242c) ===
-            SetMod("Final Boss drops # additional Divine Orbs", 10000);
-            SetMod("#% chance to drop an additional Divine Orb", 4000);
+            ("Divine Orb", "Divine Orbs", DivineChaos, RewardGroup.Divine),
+            ("Eldritch Chaos Orb", "Eldritch Chaos Orbs", 39.04, RewardGroup.Eldritch),
+            ("Eldritch Orb of Annulment", "Eldritch Orbs of Annulment", 26.3, RewardGroup.Eldritch),
+            ("Eldritch Exalted Orb", "Eldritch Exalted Orbs", 2.97, RewardGroup.Eldritch),
+            ("Grand Eldritch Ichor", "Grand Eldritch Ichors", 2.4, RewardGroup.Eldritch),
+            ("Grand Eldritch Ember", "Grand Eldritch Embers", 1.99, RewardGroup.Eldritch),
+            ("Greater Eldritch Ichor", "Greater Eldritch Ichors", 0.97, RewardGroup.Eldritch),
+            ("Greater Eldritch Ember", "Greater Eldritch Embers", 0.6, RewardGroup.Eldritch),
+            ("Lesser Eldritch Ichor", "Lesser Eldritch Ichors", 0.48, RewardGroup.Eldritch),
+            ("Lesser Eldritch Ember", "Lesser Eldritch Embers", 0.49, RewardGroup.Eldritch),
+            ("Orb of Unmaking", "Orbs of Unmaking", 0.57, RewardGroup.Eldritch),
+            ("Orb of Annulment", "Orbs of Annulment", 8.15, RewardGroup.Basic),
+            ("Ancient Orb", "Ancient Orbs", 6.46, RewardGroup.Basic),
+            ("Gemcutter's Prism", "Gemcutter's Prisms", 2.41, RewardGroup.Basic),
+            ("Glassblower's Bauble", "Glassblower's Baubles", 1.95, RewardGroup.Basic),
+            ("Orb of Regret", "Orbs of Regret", 1.25, RewardGroup.Basic),
+            ("Exalted Orb", "Exalted Orbs", 0.89, RewardGroup.Basic),
+            ("Chromatic Orb", "Chromatic Orbs", 0.81, RewardGroup.Basic),
+            ("Orb of Scouring", "Orbs of Scouring", 0.57, RewardGroup.Basic),
+            ("Vaal Orb", "Vaal Orbs", 0.52, RewardGroup.Basic),
+            ("Instilling Orb", "Instilling Orbs", 0.5, RewardGroup.Basic),
+            ("Enkindling Orb", "Enkindling Orbs", 0.36, RewardGroup.Basic),
+            ("Regal Orb", "Regal Orbs", 0.2, RewardGroup.Basic),
+            ("Blessed Orb", "Blessed Orbs", 0.17, RewardGroup.Basic),
+            ("Orb of Fusing", "Orbs of Fusing", 0.14, RewardGroup.Basic),
+            ("Orb of Alteration", "Orbs of Alteration", 0.08, RewardGroup.Basic),
+            ("Jeweller's Orb", "Jeweller's Orbs", 0.03, RewardGroup.Basic),
+            ("Chaos Orb", "Chaos Orbs", 1.0, RewardGroup.Basic),
+            ("Legion Thread", "Legion Threads", 2.04, RewardGroup.Thread),
+            ("Ultimatum Thread", "Ultimatum Threads", 1.91, RewardGroup.Thread),
+            ("Abyss Thread", "Abyss Threads", 1.86, RewardGroup.Thread),
+            ("Ritual Thread", "Ritual Threads", 0.93, RewardGroup.Thread),
+            ("Blight Thread", "Blight Threads", 0.9, RewardGroup.Thread),
+            ("Bestiary Thread", "Bestiary Threads", 0.68, RewardGroup.Thread),
+            ("Breach Thread", "Breach Threads", 0.46, RewardGroup.Thread),
+            ("Betrayal Thread", "Betrayal Threads", 0.28, RewardGroup.Thread),
+            ("Incursion Thread", "Incursion Threads", 0.17, RewardGroup.Thread),
+            ("Expedition Thread", "Expedition Threads", 0.11, RewardGroup.Thread),
+        };
 
-            // === Eldritch Currency (updated prices) ===
-            // Eldritch Chaos Orb: 19.4c
-            SetMod("Final Boss drops # additional Eldritch Chaos Orbs", 2400);
-            SetMod("#% chance to drop an additional Eldritch Chaos Orb", 960);
-            // Eldritch Orb of Annulment: 15c
-            SetMod("Final Boss drops # additional Eldritch Orbs of Annulment", 1850);
-            SetMod("#% chance to drop an additional Eldritch Orb of Annulment", 740);
-            // Eldritch Exalted Orb: ~10c
-            SetMod("Final Boss drops # additional Eldritch Exalted Orbs", 1235);
-            SetMod("#% chance to drop an additional Eldritch Exalted Orb", 490);
-            // Grand Ichor: 3c
-            SetMod("Final Boss drops # additional Grand Eldritch Ichors", 370);
-            SetMod("#% chance to drop an additional Grand Eldritch Ichor", 148);
-            // Grand Ember: 4c
-            SetMod("Final Boss drops # additional Grand Eldritch Embers", 495);
-            SetMod("#% chance to drop an additional Grand Eldritch Ember", 198);
-            // Greater Ichor/Ember: 1c each
-            SetMod("Final Boss drops # additional Greater Eldritch Ichors", 125);
-            SetMod("Final Boss drops # additional Greater Eldritch Embers", 125);
-            SetMod("#% chance to drop an additional Greater Eldritch Ichor", 50);
-            SetMod("#% chance to drop an additional Greater Eldritch Ember", 50);
+        private static string BossKey(string many) => $"Final Boss drops # additional {many}";
+        private static string MinionKey(string one) => $"#% chance to drop an additional {one}";
 
-            // === Dangerous downsides ===
-            SetMod("Take # Chaos Damage per second during any Flask Effect", -9000);
-            SetMod("Projectiles are fired in random directions", -9000);
-            SetMod("#% chance to be targeted by a Meteor when you use a Flask", -5000);
-            SetMod("Curses you inflict are reflected back to you", -3000);
-            SetMod("Non-Damaging Ailments you inflict are reflected back to you", -2000);
+        // Divine Orb x3 = TopWeight; everything else is proportional (capped at TopWeight)
+        private static int BossWeightFor(double chaos, double divine) =>
+            Math.Clamp((int)Math.Round(chaos * 3 * (TopWeight / (3 * divine))), 1, TopWeight);
+
+        private static int MinionWeightFor(double chaos, double divine) =>
+            Math.Clamp((int)Math.Round(BossWeightFor(chaos, divine) * 0.4), 1, TopWeight);
+
+        private static void AddPriced(IDictionary<string, int> dict, (string One, string Many, double Chaos, RewardGroup Group) r,
+            double chaos, double divine, Func<string, bool> skip = null)
+        {
+            void Set(string key, int weight)
+            {
+                if (skip != null && skip(key)) return;
+                dict[key] = weight;
+            }
+
+            Set(BossKey(r.Many), BossWeightFor(chaos, divine));
+            Set(MinionKey(r.One), MinionWeightFor(chaos, divine));
+            // Boss "1 additional" Ichor/Ember variant (singular wording, exactly 1 item instead of avg 3)
+            if (r.One.Contains("Eldritch Ichor") || r.One.Contains("Eldritch Ember"))
+                Set(BossKey(r.One), Math.Clamp((int)Math.Round(chaos * (TopWeight / (3 * divine))), 1, TopWeight));
         }
 
-        private void ApplyPreset_ScarabFocus()
+        // Rewards that have no market price: kept as manual values.
+        private static void AddManual(IDictionary<string, int> dict)
         {
-            // === Divine Orb — always worth taking ===
-            SetMod("Final Boss drops # additional Divine Orbs", 10000);
-            SetMod("#% chance to drop an additional Divine Orb", 4000);
+            dict["Threads dropped by slain Enemies have #% chance to be Duplicated"] = 180;
+            dict["Basic Currency Items dropped by slain Enemies have #% chance to be Duplicated"] = 170;
+            dict["Divination Cards dropped by slain Enemies have #% chance to be Duplicated"] = 696;
+            dict["Unique Items dropped by slain Enemies have #% chance to be Duplicated"] = 135;
+            dict["#% increased Quantity of Items found in this Area"] = 520;
+            dict["#% increased Rarity of Items found in this Area"] = 41;
+            dict["Projectiles are fired in random directions"] = 181;
 
-            // === Scarabs (prices ~5-11c each, boss drops 2-4) ===
-            // Ultimatum: ~10c
-            SetMod("Final Boss drops # additional Ultimatum Scarabs", 1230);
-            SetMod("#% chance to drop an additional Ultimatum Scarab", 490);
-            // Breach: ~5c
-            SetMod("Final Boss drops # additional Breach Scarabs", 615);
-            SetMod("#% chance to drop an additional Breach Scarab", 246);
-            // Delirium: ~5c
-            SetMod("Final Boss drops # additional Delirium Scarabs", 615);
-            SetMod("#% chance to drop an additional Delirium Scarab", 246);
-            // Legion: ~4c
-            SetMod("Final Boss drops # additional Legion Scarabs", 490);
-            SetMod("#% chance to drop an additional Legion Scarab", 196);
-            // Essence: ~5c
-            SetMod("Final Boss drops # additional Essence Scarabs", 615);
-            SetMod("#% chance to drop an additional Essence Scarab", 246);
-            // Incursion: ~5c
-            SetMod("Final Boss drops # additional Incursion Scarabs", 615);
-            SetMod("#% chance to drop an additional Incursion Scarab", 246);
-            // Beyond: ~3c
-            SetMod("Final Boss drops # additional Beyond Scarabs", 370);
-            SetMod("#% chance to drop an additional Beyond Scarab", 148);
-            // Harvest/Ritual/Ambush: ~5c
-            SetMod("Final Boss drops # additional Harvest Scarabs", 615);
-            SetMod("Final Boss drops # additional Ritual Scarabs", 615);
-            SetMod("Final Boss drops # additional Ambush Scarabs", 615);
-            // Scarab duplication (Player type) — bonus
-            SetMod("Scarabs dropped by slain Enemies have #% chance to be Duplicated", 900);
+            // Severe downsides (stored negative; the plugin subtracts the absolute value)
+            dict["Take # Chaos Damage per second during any Flask Effect"] = -9000;
+            dict["#% chance to be targeted by a Meteor when you use a Flask"] = -5000;
+            dict["Curses you inflict are reflected back to you"] = -3000;
+            dict["#% reduced Recovery Rate of Life, Mana and Energy Shield per Endurance Charge"] = -18;
+            dict["-#% to Critical Strike Multiplier per Power Charge"] = -287;
+        }
 
-            // === Dangerous downsides ===
-            SetMod("Take # Chaos Damage per second during any Flask Effect", -9000);
-            SetMod("Projectiles are fired in random directions", -9000);
-            SetMod("#% chance to be targeted by a Meteor when you use a Flask", -5000);
+        private static Dictionary<string, int> BuildDefaultTiers()
+        {
+            var d = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            foreach (var r in PricedRewards) AddPriced(d, r, r.Chaos, DivineChaos);
+            AddManual(d);
+            return d;
+        }
+
+        // Explicit preset click: uses live prices when available and takes over those weights again.
+        private void ApplyPriced(Func<(string One, string Many, double Chaos, RewardGroup Group), bool> filter)
+        {
+            double divine = CurrentDivine;
+            foreach (var r in PricedRewards)
+            {
+                if (!filter(r)) continue;
+                AddPriced(ModTiers, r, PriceOf(r.One, r.Chaos), divine);
+                ManualWeights.Remove(BossKey(r.Many));
+                ManualWeights.Remove(MinionKey(r.One));
+                ManualWeights.Remove(BossKey(r.One));
+            }
+        }
+
+        /// <summary>
+        /// Called by the plugin when the Ninja Price cache changed. Re-prices every reward weight that is
+        /// currently configured, unless the user set it by hand. Does nothing when auto-update is off.
+        /// </summary>
+        public void ApplyLivePrices(Dictionary<string, double> prices, string status)
+        {
+            _livePrices = new Dictionary<string, double>(prices, StringComparer.OrdinalIgnoreCase);
+            PriceStatus = status ?? "";
+            if (!AutoUpdatePrices) return;
+
+            double divine = CurrentDivine;
+            bool Skip(string key) => ManualWeights.Contains(key) || !ModTiers.ContainsKey(key);
+            foreach (var r in PricedRewards)
+                AddPriced(ModTiers, r, PriceOf(r.One, r.Chaos), divine, Skip);
+
+            // Duplication / quantity / rarity weights have no market price and stay manual.
+        }
+
+        // Presets only SET their own mods - they do NOT clear existing weights.
+        private void ApplyPreset_DivineFocus()
+        {
+            ApplyPriced(r => r.Group is RewardGroup.Divine or RewardGroup.Eldritch);
+            SetDangerousDownsides();
+            ModTiers["Non-Damaging Ailments you inflict are reflected back to you"] = -2000;
+        }
+
+        private void ApplyPreset_ThreadFocus()
+        {
+            ApplyPriced(r => r.Group is RewardGroup.Divine or RewardGroup.Thread);
+            ModTiers["Threads dropped by slain Enemies have #% chance to be Duplicated"] = 900;
+            SetDangerousDownsides();
         }
 
         private void ApplyPreset_EldritchFocus()
         {
-            // === Divine + Eldritch as priority ===
-            SetMod("Final Boss drops # additional Divine Orbs", 10000);
-            SetMod("#% chance to drop an additional Divine Orb", 4000);
-            // Eldritch Chaos Orb: 19.4c
-            SetMod("Final Boss drops # additional Eldritch Chaos Orbs", 2400);
-            SetMod("#% chance to drop an additional Eldritch Chaos Orb", 960);
-            // Eldritch Annulment: 15c
-            SetMod("Final Boss drops # additional Eldritch Orbs of Annulment", 1850);
-            SetMod("#% chance to drop an additional Eldritch Orb of Annulment", 740);
-            // Eldritch Exalted: ~10c
-            SetMod("Final Boss drops # additional Eldritch Exalted Orbs", 1235);
-            SetMod("#% chance to drop an additional Eldritch Exalted Orb", 490);
-            // Grand Ichor: 3c
-            SetMod("Final Boss drops # additional Grand Eldritch Ichors", 370);
-            SetMod("#% chance to drop an additional Grand Eldritch Ichor", 148);
-            // Grand Ember: 4c
-            SetMod("Final Boss drops # additional Grand Eldritch Embers", 495);
-            SetMod("#% chance to drop an additional Grand Eldritch Ember", 198);
-            // Greater Ichor/Ember: 1c each
-            SetMod("Final Boss drops # additional Greater Eldritch Ichors", 125);
-            SetMod("Final Boss drops # additional Greater Eldritch Embers", 125);
-            SetMod("#% chance to drop an additional Greater Eldritch Ichor", 50);
-            SetMod("#% chance to drop an additional Greater Eldritch Ember", 50);
-            // Orb of Unmaking: 0.4c
-            SetMod("Final Boss drops # additional Orbs of Unmaking", 50);
-            SetMod("#% chance to drop an additional Orb of Unmaking", 20);
+            ApplyPriced(r => r.Group is RewardGroup.Divine or RewardGroup.Eldritch);
+            SetDangerousDownsides();
+        }
 
-            // === Dangerous downsides ===
-            SetMod("Take # Chaos Damage per second during any Flask Effect", -9000);
-            SetMod("Projectiles are fired in random directions", -9000);
-            SetMod("#% chance to be targeted by a Meteor when you use a Flask", -5000);
-            SetMod("Curses you inflict are reflected back to you", -3000);
+        /// <summary>
+        /// Armour-based character: only take a node when the reward clearly outweighs the loss.
+        /// Defensive downsides get a modest negative weight (about 5-15 chaos of value each), so a
+        /// cheap reward (Threads, basic currency) loses against a safe option, while a Divine or
+        /// Eldritch Chaos reward still wins. Boss/minion buffs are not penalised here.
+        /// Starting values - tune them while running altars.
+        /// </summary>
+        private void ApplyPreset_ArmourBuild()
+        {
+            ApplyPriced(_ => true);
+            SetDangerousDownsides();
+
+            // Resistances / physical damage reduction
+            ModTiers["-#% to Cold Resistance"] = -150;
+            ModTiers["-#% to Lightning Resistance"] = -150;
+            ModTiers["-#% to Fire Resistance"] = -150;
+            ModTiers["-#% to Chaos Resistance"] = -150;
+            ModTiers["-#% additional Physical Damage Reduction"] = -250;
+
+            // Armour / evasion / defences
+            ModTiers["-# to Armour"] = -300;
+            ModTiers["-# to Evasion Rating"] = -100;
+            ModTiers["#% reduced Defences per Frenzy Charge"] = -150;
+            ModTiers["#% reduced Recovery Rate of Life, Mana and Energy Shield per Endurance Charge"] = -100;
+            ModTiers["-#% to Critical Strike Multiplier per Power Charge"] = -60;
+
+            // Extra damage taken from nearby enemies
+            ModTiers["Enemies within # metres Gain #% of their Physical Damage as Extra Cold Damage"] = -300;
+            ModTiers["Enemies within # metres Gain #% of their Physical Damage as Extra Lightning Damage"] = -300;
+            ModTiers["Enemies within # metres Gain #% of their Physical Damage as Extra Fire Damage"] = -300;
+            ModTiers["Enemies within # metres Gain #% of their Physical Damage as Extra Chaos Damage"] = -300;
+
+            // Flasks, ailments, ground effects
+            ModTiers["#% increased Flask Charges used"] = -100;
+            ModTiers["#% reduced Flask Effect Duration"] = -100;
+            ModTiers["All Damage taken from Hits can Sap you"] = -60;
+            ModTiers["#% chance to be Sapped when Hit"] = -60;
+            ModTiers["All Damage taken from Hits can Scorch you"] = -60;
+            ModTiers["#% chance to be Scorched when Hit"] = -60;
+            ModTiers["Spell Hits have #% chance to Hinder you"] = -80;
+            ModTiers["#% chance for Enemies to drop Chilled Ground when Hitting you, no more than once every # seconds"] = -60;
+            ModTiers["#% chance for Enemies to drop Shocked Ground when Hitting you, no more than once every # seconds"] = -60;
+            ModTiers["#% chance for Enemies to drop Burning Ground when Hitting you, no more than once every 2 seconds"] = -60;
+        }
+
+        /// <summary>
+        /// [Test / Experimental] Tailored to the Bannerman Champion build:
+        /// melee physical (Lacerate of Butchering / Cyclone), armour 18k, life 2.8k, physical max hit ~5k
+        /// (the weakest point), elemental overcap 116-146% but chaos resistance only 80% (+1 overcap),
+        /// Unwavering Stance (no evasion), permanent 3 endurance/frenzy/power charges, 5 flasks,
+        /// Uul-Netol's Kiss (its Vulnerability curse reflected on you is weak and tanked fine),
+        /// Maim/Intimidate on hit. Also sets the thresholds so weak altars are simply skipped.
+        /// Rough scale: 1000 weight = ~46 chaos of boss-drop value.
+        /// </summary>
+        private void ApplyPreset_ChampionBuild()
+        {
+            ApplyPriced(_ => true);
+            SetDangerousDownsides();
+
+            void W(string id, int w) { ModTiers[id] = w; ManualWeights.Add(id); }
+            void Zero(string id) { ModTiers.Remove(id); ManualWeights.Add(id); }
+
+            // --- Lethal for this build (physical max hit is only ~5k) ---
+            W("#% reduced Defences per Frenzy Charge", -9000);                     // 3 frenzy charges = 90-150% reduced defences
+            W("-#% additional Physical Damage Reduction", -6000);
+            W("Hits have #% chance to ignore Enemy Physical Damage Reduction", -6000); // minions ignore your armour
+            W("Curses you inflict are reflected back to you", -200);               // Vulnerability from Uul-Netol's Kiss is weak; tanked fine
+            W("Take # Chaos Damage per second during any Flask Effect", -500);     // 80% chaos res + 518 regen: mostly harmless
+
+            // --- Painful: offence / sustain / uptime ---
+            W("Enemies lose # Flask Charges every # seconds and cannot gain Flask Charges for # seconds after being Hit", -2000);
+            W("#% chance to remove a random Charge from Enemy on Hit", -2000);     // removes YOUR charges
+            W("Non-Damaging Ailments you inflict are reflected back to you", -1200); // Maim / Intimidate / Impale-type effects on you
+            W("-#% to Critical Strike Multiplier per Power Charge", -700);         // 3 power charges = -60..-120%
+            W("#% reduced Recovery Rate of Life, Mana and Energy Shield per Endurance Charge", -600);
+            W("#% increased Flask Charges used", -400);
+            W("#% reduced Flask Effect Duration", -400);
+            W("#% chance to be targeted by a Meteor when you use a Flask", -600);
+            W("-# to Armour", -1500);
+            W("-#% to Chaos Resistance", -400);                                    // only +1% overcap
+            W("#% chance for Enemies to drop Shocked Ground when Hitting you, no more than once every # seconds", -500);
+            W("#% chance for Enemies to drop Burning Ground when Hitting you, no more than once every 2 seconds", -250);
+            W("#% chance for Enemies to drop Chilled Ground when Hitting you, no more than once every # seconds", -60);
+            W("All Damage taken from Hits can Sap you", -200);
+            W("#% chance to be Sapped when Hit", -200);
+            W("All Damage taken from Hits can Scorch you", -200);
+            W("#% chance to be Scorched when Hit", -200);
+            W("Spell Hits have #% chance to Hinder you", -60);
+            foreach (var e in new[] { "Cold", "Lightning", "Fire" })
+                W($"Enemies within # metres Gain #% of their Physical Damage as Extra {e} Damage", -700);
+            W("Enemies within # metres Gain #% of their Physical Damage as Extra Chaos Damage", -500);
+
+            // --- Irrelevant for this build ---
+            Zero("-#% to Cold Resistance");                                        // 116-146% elemental overcap
+            Zero("-#% to Lightning Resistance");
+            Zero("-#% to Fire Resistance");
+            Zero("-# to Evasion Rating");                                          // Unwavering Stance: no evasion
+            Zero("Projectiles are fired in random directions");                    // melee build
+
+            // --- Boss / minion tankiness: only mildly penalised (PoB: ~6.4M DPS, 100% hit chance) ---
+            W("#% additional Physical Damage Reduction", -800);                    // shared by boss and minions
+            W("+# to Armour", -600);
+            W("#% increased Armour", -300);
+            W("#% increased Evasion Rating", -100);
+            W("#% Global chance to Blind Enemies on hit", -200);
+            W("#% increased Blind Effect", -200);
+            W("Gain #% of Maximum Life as Extra Maximum Energy Shield", -150);
+            W("Damage Penetrates #% of Enemy Elemental Resistances", -500);
+            W("Hits always Shock", -400);
+            W("All Damage can Shock", -400);
+            W("Skills fire # additional Projectiles", -500);
+            W("#% increased Attack Speed", -400);
+            W("#% increased Cast Speed", -200);
+            W("#% increased Movement Speed", -300);
+            W("Gain #% of Physical Damage as Extra Cold Damage", -400);
+            W("Gain #% of Physical Damage as Extra Lightning Damage", -400);
+            W("Gain #% of Physical Damage as Extra Fire Damage", -400);
+            W("Gain #% of Physical Damage as Extra Chaos Damage", -400);
+            W("Gain #% of Physical Damage as Extra Damage of a random Element", -400);
+            W("#% chance to create Shocked Ground on Death, lasting # seconds", -300);
+            W("Create Consecrated Ground on Hit, lasting # seconds", -300);
+            W("#% increased Area of Effect", -200);
+
+            // --- Thresholds: take an altar only when it is clearly worth it ---
+            AltarSettings.MinPickWeight.Value = 1000;          // ~46c of expected value after downsides
+            AltarSettings.NegativeVetoThreshold.Value = 3000;  // any single downside >= 3000 = red, never recommended
+            AltarSettings.PositiveVetoThreshold.Value = 4000;  // only Divine Orb rewards override the vetoes
+        }
+
+        private void SetDangerousDownsides()
+        {
+            ModTiers["Take # Chaos Damage per second during any Flask Effect"] = -9000;
+            ModTiers["Projectiles are fired in random directions"] = -9000;
+            ModTiers["#% chance to be targeted by a Meteor when you use a Flask"] = -5000;
+            ModTiers["Curses you inflict are reflected back to you"] = -3000;
         }
 
         private void SetMod(string partialName, int weight)
@@ -508,6 +672,10 @@ namespace AltarHelperV2
         [Menu("Positive Veto Threshold",
             "If any single GOOD mod >= this value → always take (wins over negative veto).\n0 = disabled")]
         public RangeNode<int> PositiveVetoThreshold { get; set; } = new RangeNode<int>(0, 0, 10000);
+
+        [Menu("Min. net weight to recommend an option",
+            "An option is highlighted only when its net weight (rewards - downsides) reaches this value.\nBelow it the altar is simply not highlighted = skip it.\n0 = any positive net weight")]
+        public RangeNode<int> MinPickWeight { get; set; } = new RangeNode<int>(0, 0, 10000);
 
         [Menu("Min. net weight for positive alert")]
         public RangeNode<int> AlertMinNetWeight { get; set; } = new RangeNode<int>(1, 1, 10000);

@@ -14,9 +14,11 @@
     <ExapiPackage Condition="'$(ExapiPackage)' == '' and Exists('..\..\..\ExileCore.dll')">..\..\..</ExapiPackage>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="tests\**\*.cs" />
-    <PackageReference Include="ImGui.NET" Version="1.90.0.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <Compile Remove="tests\**" />
+    <None Remove="tests\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
   </ItemGroup>
   <ItemGroup>
@@ -28,9 +30,15 @@
       <HintPath>$(ExapiPackage)\GameOffsets.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Hexa.NET.ImGui">
+      <HintPath>$(exapiPackage)\Hexa.NET.ImGui.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
-  <Target Name="ValidateExileCorePath" BeforeTargets="ResolveReferences"
-          Condition="!Exists('$(ExapiPackage)\ExileCore.dll') or !Exists('$(ExapiPackage)\GameOffsets.dll')">
+  <ItemGroup>
+    <Using Include="Hexa.NET.ImGui" />
+  </ItemGroup>
+  <Target Name="ValidateExileCorePath" BeforeTargets="ResolveReferences" Condition="!Exists('$(ExapiPackage)\ExileCore.dll') or !Exists('$(ExapiPackage)\GameOffsets.dll')">
     <Error Text="ExileCore dependencies were not found. Build with: dotnet build -p:exapiPackage=&quot;C:\path\to\ExileCore&quot;" />
   </Target>
 </Project>
