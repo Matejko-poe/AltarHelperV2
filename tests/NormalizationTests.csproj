@@ -4,8 +4,15 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);CS8632</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\AltarTextNormalizer.cs" Link="AltarTextNormalizer.cs" />
+    <Compile Include="..\AltarProfiles.cs" Link="AltarProfiles.cs" />
+    <Compile Include="..\AltarWizard.cs" Link="AltarWizard.cs" />
+    <Compile Include="..\AltarBossDrops.cs" Link="AltarBossDrops.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 </Project>

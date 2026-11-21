@@ -14,7 +14,7 @@ using SN = System.Numerics;
 namespace AltarHelperV2
 {
     [SupportedOSPlatform("windows")]
-    public class Settings : ISettings
+    public partial class Settings : ISettings
     {
         public ToggleNode Enable { get; set; } = new ToggleNode(true);
         public AltarSettings AltarSettings { get; set; } = new AltarSettings();
@@ -31,6 +31,10 @@ namespace AltarHelperV2
 
         [JsonIgnore]
         public CustomNode ModsTable { get; }
+
+        // [Test] Profiles + setup wizard panel (see SettingsProfiles.cs); the old panel above stays as it is
+        [JsonIgnore]
+        public CustomNode ProfilesPanel { get; }
 
         [JsonIgnore]
         public CustomNode UnknownModsDisplay { get; }
@@ -81,6 +85,8 @@ namespace AltarHelperV2
                 DrawDelegate = () =>
                 {
                     if (!ImGui.TreeNode("Mods & Weights (V2)")) return;
+
+                    DrawProfileQuickSwitch();
 
                     ImGui.TextColored(new SN.Vector4(1f, 0.65f, 0.2f, 1f),
                         "IMPORTANT: bundled weights are the maintainer's personal defaults.");
@@ -210,6 +216,13 @@ namespace AltarHelperV2
                         };
                         // TextColored treats the string as a printf format — escape % to avoid garbage output
                         ImGui.TextColored(col, name.Replace("%", "%%"));
+                        var priceText = PriceLabelFor(id);
+                        if (priceText != null)
+                        {
+                            ImGui.SameLine();
+                            ImGui.TextColored(PriceColor, priceText);
+                        }
+                        DrawUnsavedMarker(id);
 
                         // Type column
                         ImGui.TableNextColumn();
@@ -234,6 +247,11 @@ namespace AltarHelperV2
                     ImGui.EndTable();
                     ImGui.TreePop();
                 }
+            };
+
+            ProfilesPanel = new CustomNode
+            {
+                DrawDelegate = DrawProfilesPanel
             };
 
             UnknownModsDisplay = new CustomNode
@@ -304,10 +322,9 @@ namespace AltarHelperV2
         // Price-based weights - poe.ninja, league "Covens", 2026-11-17
         // (read from the Ninja Price / Get-Chaos-Value cache: NinjaData\Covens\*.json)
         //
-        // Scale: Divine Orb (153.9c) is ALWAYS the top reward: a boss drop averages 3 items,
-        //        3 x 153.9c = 462c -> weight 10000 (hard cap, nothing can exceed it).
-        //        => 1 chaos = ~21.66 weight units.
-        //   boss drop weight   = chaos price x 3 x 21.66      (2-4 items, avg 3)
+        // Scale (see AltarRewardWeights): Divine Orb is ALWAYS the top reward (10000). Everything else is
+        //   10000 x (price / divine) ^ 0.65, so cheap rewards like a Chaos Orb still count while a pricier
+        //   item always ranks above a cheaper one. Threads use price x 10 (they drop in big stacks).
         //   minion drop weight = 40% of the boss weight        (low chance per kill)
         //
         // These numbers are only the built-in fallback; live prices from the Ninja Price cache replace them.
@@ -372,13 +389,8 @@ namespace AltarHelperV2
         private static string BossKey(string many) => $"Final Boss drops # additional {many}";
         private static string MinionKey(string one) => $"#% chance to drop an additional {one}";
 
-        // Divine Orb x3 = TopWeight; everything else is proportional (capped at TopWeight)
-        private static int BossWeightFor(double chaos, double divine) =>
-            Math.Clamp((int)Math.Round(chaos * 3 * (TopWeight / (3 * divine))), 1, TopWeight);
-
-        private static int MinionWeightFor(double chaos, double divine) =>
-            Math.Clamp((int)Math.Round(BossWeightFor(chaos, divine) * 0.4), 1, TopWeight);
-
+        // Weight model lives in AltarRewardWeights (AltarWizard.cs): chaos price is the unit, Divine is the top,
+        // weights grow flatter than the price, and Threads get a bulk factor because they drop in big stacks.
         private static void AddPriced(IDictionary<string, int> dict, (string One, string Many, double Chaos, RewardGroup Group) r,
             double chaos, double divine, Func<string, bool> skip = null)
         {
@@ -388,23 +400,44 @@ namespace AltarHelperV2
                 dict[key] = weight;
             }
 
-            Set(BossKey(r.Many), BossWeightFor(chaos, divine));
-            Set(MinionKey(r.One), MinionWeightFor(chaos, divine));
+            bool thread = r.Group == RewardGroup.Thread;
+            bool isDivine = r.Group == RewardGroup.Divine;
+            Set(BossKey(r.Many), AltarRewardWeights.Boss(chaos, divine, thread, isDivine));
+            Set(MinionKey(r.One), AltarRewardWeights.Minion(chaos, divine, thread, isDivine));
             // Boss "1 additional" Ichor/Ember variant (singular wording, exactly 1 item instead of avg 3)
             if (r.One.Contains("Eldritch Ichor") || r.One.Contains("Eldritch Ember"))
-                Set(BossKey(r.One), Math.Clamp((int)Math.Round(chaos * (TopWeight / (3 * divine))), 1, TopWeight));
+                Set(BossKey(r.One), AltarRewardWeights.BossSingle(chaos, divine, thread, isDivine));
         }
 
-        // Rewards that have no market price: kept as manual values.
+        // Rewards that have no market price: kept as manual values (duplication, quantity, Divination Cards).
         private static void AddManual(IDictionary<string, int> dict)
         {
-            dict["Threads dropped by slain Enemies have #% chance to be Duplicated"] = 180;
-            dict["Basic Currency Items dropped by slain Enemies have #% chance to be Duplicated"] = 170;
-            dict["Divination Cards dropped by slain Enemies have #% chance to be Duplicated"] = 696;
-            dict["Unique Items dropped by slain Enemies have #% chance to be Duplicated"] = 135;
-            dict["#% increased Quantity of Items found in this Area"] = 520;
-            dict["#% increased Rarity of Items found in this Area"] = 41;
+            // Duplicated drops multiply EVERYTHING that drops, so they are weighted high.
+            dict["Threads dropped by slain Enemies have #% chance to be Duplicated"] = 2000;
+            dict["Basic Currency Items dropped by slain Enemies have #% chance to be Duplicated"] = 1500;
+            dict["Divination Cards dropped by slain Enemies have #% chance to be Duplicated"] = 2000;
+            dict["Unique Items dropped by slain Enemies have #% chance to be Duplicated"] = 700;
+            dict["Maps dropped by slain Enemies have #% chance to be Duplicated"] = 500;
+            dict["Gems dropped by slain Enemies have #% chance to be Duplicated"] = 300;
+            dict["#% increased Quantity of Items found in this Area"] = 1000;
+            dict["#% increased Rarity of Items found in this Area"] = 1500;
+
+            // Extra Divination Cards (boss: guaranteed extra cards, minion: chance per kill)
+            void Cards(string kind, int boss, int minion)
+            {
+                dict[$"Final Boss drops # additional Divination Cards which reward {kind}"] = boss;
+                dict[$"#% chance to drop an additional Divination Card which rewards {kind}"] = minion;
+            }
+            Cards("Currency", 1200, 500);
+            Cards("Basic Currency", 800, 330);
+            Cards("League Currency", 900, 360);
+            Cards("other Divination Cards", 400, 160);
+
             dict["Projectiles are fired in random directions"] = 181;
+
+            // Reduced item quantity / rarity are costs (stored negative)
+            dict["#% reduced Quantity of Items found in this Area"] = -1000;
+            dict["#% reduced Rarity of Items found in this Area"] = -1500;
 
             // Severe downsides (stored negative; the plugin subtracts the absolute value)
             dict["Take # Chaos Damage per second during any Flask Effect"] = -9000;
@@ -443,8 +476,10 @@ namespace AltarHelperV2
         public void ApplyLivePrices(Dictionary<string, double> prices, string status)
         {
             _livePrices = new Dictionary<string, double>(prices, StringComparer.OrdinalIgnoreCase);
+            _priceIndex = null; // rebuilt lazily with the new prices
             PriceStatus = status ?? "";
             if (!AutoUpdatePrices) return;
+            bool hadPendingEdits = _dirty;
 
             double divine = CurrentDivine;
             bool Skip(string key) => ManualWeights.Contains(key) || !ModTiers.ContainsKey(key);
@@ -452,6 +487,9 @@ namespace AltarHelperV2
                 AddPriced(ModTiers, r, PriceOf(r.One, r.Chaos), divine, Skip);
 
             // Duplication / quantity / rarity weights have no market price and stay manual.
+
+            // A price refresh is not a user edit: persist it quietly unless the user has unsaved changes.
+            if (!hadPendingEdits && _store != null) SaveActiveProfile();
         }
 
         // Presets only SET their own mods - they do NOT clear existing weights.
@@ -680,6 +718,17 @@ namespace AltarHelperV2
         [Menu("Min. net weight for positive alert")]
         public RangeNode<int> AlertMinNetWeight { get; set; } = new RangeNode<int>(1, 1, 10000);
 
+        [Menu("Scale boss drops by count",
+            "\"Final Boss drops N additional X\": the weight of X is meant for 3 drops and is scaled to the real N on the altar\n" +
+            "(1 drop = 1/3, 6 drops = 2x). Singular wording (\"1 additional Ultimatum Thread\") is recognised either way.")]
+        public ToggleNode ScaleBossDropByCount { get; set; } = new ToggleNode(true);
+
+        [Menu("Signed downside weights",
+            "ON: in the downside section a NEGATIVE weight is a penalty and a POSITIVE weight is a small bonus\n" +
+            "(counted only when the option also has a reward). Profiles from the wizard use this.\n" +
+            "OFF (old behaviour): any non-zero weight in the downside section is a penalty.")]
+        public ToggleNode SignedDownsideWeights { get; set; } = new ToggleNode(false);
+
         [Menu("Mode (1=Any | 2=Minions+Player | 3=Boss+Player)")]
         public RangeNode<int> SwitchMode { get; set; } = new RangeNode<int>(1, 1, 3);
 
@@ -715,6 +764,16 @@ namespace AltarHelperV2
 
         [Menu("Background highlight opacity", "0=transparent 255=fully opaque")]
         public RangeNode<int> BackgroundAlpha { get; set; } = new RangeNode<int>(35, 0, 120);
+
+        [Menu("[Test] Near editor window",
+            "Shows a window with sliders for exactly the mods of the altar you are standing at.\nEdits go to the active profile and auto-save.")]
+        public ToggleNode NearEditor { get; set; } = new ToggleNode(false);
+
+        [Menu("Near editor hotkey")]
+        public HotkeyNodeV2 NearEditorHotkey { get; set; } = new HotkeyNodeV2(Keys.NumPad7);
+
+        [Menu("Near editor range", "Only show the window when the altar is this close (grid units)")]
+        public RangeNode<int> NearEditorRange { get; set; } = new RangeNode<int>(60, 10, 300);
     }
 
     // ============================================================

@@ -42,6 +42,9 @@ namespace AltarHelperV2
             LabelCache = new FrameCache<List<LabelOnGround>>(UpdateAltarLabelList);
             Settings.DrawUnknownModsDelegate = DrawUnknownModsSection;
 
+            // [Test] character profiles: one JSON file per profile next to the plugin
+            Settings.InitProfiles(Path.Combine(ConfigDirectory, "Profiles"), Path.Combine(DirectoryFullName, "Profiles"));
+
             // Live poe.ninja prices come from the Ninja Price plugin cache (no network access here)
             _priceFeed.Initialise(DirectoryFullName);
             Settings.RefreshPricesNow = () => RefreshPrices(true);
@@ -118,8 +121,50 @@ namespace AltarHelperV2
                 .ToList();
         }
 
+        // Mod lines of the nearest altar for the "near editor" window: (top up/down, bottom up/down, distance)
+        private (List<string> TopUp, List<string> TopDown, List<string> BottomUp, List<string> BottomDown, float Distance)? _near;
+
+        // The last altars you stood at (newest first) and the one opened for editing from that list
+        private readonly List<AltarRecord> _history = new();
+        private AltarRecord _pinned;
+        private const int HistorySize = 10;
+
+        private void RecordAltar(List<string> topUp, List<string> topDown, List<string> bottomUp, List<string> bottomDown)
+        {
+            var signature = string.Join("\n", topUp.Concat(new[] { "|" }).Concat(topDown).Concat(new[] { "||" })
+                .Concat(bottomUp).Concat(new[] { "|" }).Concat(bottomDown));
+            if (signature.Length < 5) return;
+
+            var existing = _history.FirstOrDefault(r => r.Signature == signature);
+            if (existing != null)
+            {
+                existing.Seen = DateTime.Now;
+                if (_history[0] != existing) { _history.Remove(existing); _history.Insert(0, existing); }
+                return;
+            }
+            _history.Insert(0, new AltarRecord
+            {
+                Seen = DateTime.Now, Signature = signature,
+                TopUp = new List<string>(topUp), TopDown = new List<string>(topDown),
+                BottomUp = new List<string>(bottomUp), BottomDown = new List<string>(bottomDown),
+            });
+            if (_history.Count > HistorySize) _history.RemoveRange(HistorySize, _history.Count - HistorySize);
+        }
+
         public override void Render()
         {
+            // Near editor: sliders for exactly the mods of the altar you stand at
+            if (Settings.DisplaySettings.NearEditor.Value)
+            {
+                if (_pinned != null)
+                    Settings.DrawNearEditor(_pinned.TopUp, _pinned.TopDown, _pinned.BottomUp, _pinned.BottomDown,
+                        $"altar from {_pinned.Seen:HH:mm:ss} (from history)", () => _pinned = null);
+                else if (_near is { } n && n.Distance <= Settings.DisplaySettings.NearEditorRange.Value)
+                    Settings.DrawNearEditor(n.TopUp, n.TopDown, n.BottomUp, n.BottomDown, $"altar distance {n.Distance:0}");
+
+                Settings.DrawRecentAltars(_history, _pinned, r => _pinned = r);
+            }
+
             // Backgrounds (under frames)
             foreach (var (rect, color) in _boxes)
                 Graphics.DrawBox(rect, color);
@@ -138,6 +183,10 @@ namespace AltarHelperV2
             _frames.Clear();
             _boxes.Clear();
             _texts.Clear();
+            _near = null;
+
+            if (Settings.DisplaySettings.NearEditorHotkey.PressedOnce() == true)
+                Settings.DisplaySettings.NearEditor.Value = !Settings.DisplaySettings.NearEditor.Value;
 
             // Mode switch hotkey
             if (Settings.AltarSettings.HotkeyMode.PressedOnce() == true)
@@ -149,6 +198,7 @@ namespace AltarHelperV2
             }
 
             if (Settings.AutoUpdatePrices) RefreshPrices(false);
+            Settings.TickProfiles();
 
             if (!CanRun()) return null;
             CompareWeights();
@@ -186,6 +236,11 @@ namespace AltarHelperV2
                 if (topText == null || bottomText == null) continue;
 
                 var altar = new Altar(GetSelectionData(topText), GetSelectionData(bottomText));
+
+                // Near editor: remember the closest altar (even when every mod still has weight 0)
+                float distance = altarLabel.ItemOnGround?.DistancePlayer ?? float.MaxValue;
+                if (_near == null || distance < _near.Value.Distance)
+                    _near = (altar.Top.Upsides, altar.Top.Downsides, altar.Bottom.Upsides, altar.Bottom.Downsides, distance);
 
                 if (altar.Top.UpsideWeight == 0 && altar.Bottom.UpsideWeight == 0 &&
                     altar.Top.DownsideWeight == 0 && altar.Bottom.DownsideWeight == 0)
@@ -286,6 +341,10 @@ namespace AltarHelperV2
                 DrawOptionOverlay(topLabel, altar.Top, topModeWeight, topEffBad, topPosVeto, pickTop || tie);
                 DrawOptionOverlay(bottomLabel, altar.Bottom, bottomModeWeight, bottomEffBad, bottomPosVeto, pickBottom || tie);
             }
+
+            // History for the near editor: only the altar you are actually standing at
+            if (_near is { } nearest && nearest.Distance <= Settings.DisplaySettings.NearEditorRange.Value)
+                RecordAltar(nearest.TopUp, nearest.TopDown, nearest.BottomUp, nearest.BottomDown);
         }
 
         // ============================================================
@@ -505,23 +564,37 @@ namespace AltarHelperV2
 
             foreach (string entry in upsides)
             {
-                var norm = AltarTextNormalizer.NormalizeNumbers(entry);
+                var norm = AltarTextNormalizer.NormalizeNumbers(AltarBossDrops.StripMarkup(entry));
                 if (Settings.DebugSettings.DebugBuffs) DebugWindow.LogMsg($"[V2 Upside] {norm}");
-                var fe = GetEntry(norm, isUpside: true);
+                var fe = GetEntry(norm, isUpside: true, rawText: entry);
                 upsideEntries.Add(fe);
             }
             foreach (string entry in downsides)
             {
-                var norm = AltarTextNormalizer.NormalizeNumbers(entry);
+                var norm = AltarTextNormalizer.NormalizeNumbers(AltarBossDrops.StripMarkup(entry));
                 if (Settings.DebugSettings.DebugDebuffs) DebugWindow.LogMsg($"[V2 Downside] {norm}");
                 var fe = GetEntry(norm, isUpside: false);
                 downsideEntries.Add(fe);
             }
 
             int upsideWeight   = upsideEntries.Where(e => e.Weight > 0).Sum(e => e.Weight);
-            int downsideWeight = downsideEntries.Where(e => e.Weight != 0).Sum(e => Math.Abs(e.Weight));
             int maxSingleUp    = upsideEntries.Count > 0 ? upsideEntries.Max(e => Math.Max(e.Weight, 0)) : 0;
-            int maxSingleDown  = downsideEntries.Count > 0 ? downsideEntries.Max(e => Math.Abs(e.Weight)) : 0;
+            int downsideWeight, maxSingleDown;
+            bool signed = Settings.AltarSettings.SignedDownsideWeights.Value;
+            if (signed)
+            {
+                // Negative = penalty. Positive = harmless downside = small bonus, but only when the
+                // option has a real reward (a worthless altar must not be recommended for its bonuses).
+                downsideWeight = downsideEntries.Where(e => e.Weight < 0).Sum(e => -e.Weight);
+                maxSingleDown  = downsideEntries.Count > 0 ? downsideEntries.Max(e => Math.Max(-e.Weight, 0)) : 0;
+                if (upsideWeight > 0)
+                    upsideWeight += downsideEntries.Where(e => e.Weight > 0).Sum(e => e.Weight);
+            }
+            else
+            {
+                downsideWeight = downsideEntries.Where(e => e.Weight != 0).Sum(e => Math.Abs(e.Weight));
+                maxSingleDown  = downsideEntries.Count > 0 ? downsideEntries.Max(e => Math.Abs(e.Weight)) : 0;
+            }
 
             return new Selection
             {
@@ -533,14 +606,34 @@ namespace AltarHelperV2
                 MaxSingleUpside = maxSingleUp,
                 MaxSingleDownside = maxSingleDown,
                 PlayPositiveAlert = upsideEntries.Any(e => e.Alert == true && e.Weight > 0),
-                PlayNegativeAlert = downsideEntries.Any(e => e.Alert == true),
+                PlayNegativeAlert = downsideEntries.Any(e => e.Alert == true && (!signed || e.Weight <= 0)),
             };
         }
 
-        public FilterEntry GetEntry(string mod, bool isUpside)
+        public FilterEntry GetEntry(string mod, bool isUpside, string rawText = null)
         {
             int modWeight  = Settings.GetModTier(mod);
             bool modAlert  = Settings.GetModAlert(mod);
+
+            // "Final Boss drops N additional X": every wording (singular / plural / "an additional") maps to
+            // one canonical mod id whose weight is meant for 3 drops; it is scaled to the real count N.
+            if (isUpside && rawText != null && Settings.AltarSettings.ScaleBossDropByCount.Value &&
+                AltarBossDrops.TryParse(rawText, out int dropCount, out string canonical))
+            {
+                int perThree = Settings.GetModTier(canonical);
+                if (perThree == 0) perThree = modWeight;                       // weight kept under the exact wording
+                modWeight = perThree > 0 ? Math.Max(1, (int)Math.Round(perThree * dropCount / 3.0)) : perThree;
+                modAlert  = Settings.GetModAlert(canonical) || modAlert;
+                mod = canonical;
+            }
+            else if (isUpside && rawText != null && AltarBossDrops.TryParseMinion(rawText, out string minionCanonical))
+            {
+                // Minion "N% chance to drop an additional X": same reward, canonical singular wording
+                int canonicalWeight = Settings.GetModTier(minionCanonical);
+                if (canonicalWeight != 0) modWeight = canonicalWeight;
+                modAlert = Settings.GetModAlert(minionCanonical) || modAlert;
+                mod = minionCanonical;
+            }
 
             var modNorm = mod.Contains('(') && mod.Contains(')')
                 ? Regex.Replace(mod, @"\([^()]*\)", "#")
