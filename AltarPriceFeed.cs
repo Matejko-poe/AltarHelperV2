@@ -38,6 +38,18 @@ namespace AltarHelperV2
                     var plugins = Path.GetDirectoryName(parent);
                     if (!string.IsNullOrEmpty(plugins))
                         _roots.Add(Path.Combine(plugins, "Temp", "Get-Chaos-Value", "NinjaData"));
+                    // Ninja Price is also installed under other folder names (e.g. "Ninja-Price" from its
+                    // current repo): accept any plugin folder next to these that has a NinjaData cache.
+                    foreach (var dir in new[] { parent, string.IsNullOrEmpty(plugins) ? null : Path.Combine(plugins, "Temp") })
+                    {
+                        if (dir == null || !Directory.Exists(dir)) continue;
+                        foreach (var sub in Directory.GetDirectories(dir))
+                        {
+                            var ninja = Path.Combine(sub, "NinjaData");
+                            if (!_roots.Exists(r => string.Equals(r, ninja, StringComparison.OrdinalIgnoreCase)) && Directory.Exists(ninja))
+                                _roots.Add(ninja);
+                        }
+                    }
                 }
             }
             catch { }
