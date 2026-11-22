@@ -167,12 +167,16 @@ namespace AltarHelperV2
                     ImGui.TableNextColumn(); ImGui.TextUnformatted("Alert");
                     ImGui.TableNextColumn(); ImGui.TextUnformatted("Clear");
 
+                    // Several rows share an Id (the same mod for the map boss and for minions, or with other
+                    // value ranges); they edit the same weight. Their ImGui IDs use the row's position in
+                    // AltarTypes, so they stay unique and don't change while the search text changes.
                     var filtered = AltarModsConstants.AltarTypes
+                        .Select((t, row) => (t.Id, t.Name, t.Type, Row: row))
                         .Where(t => t.Name.Contains(unitFilter, StringComparison.InvariantCultureIgnoreCase));
 
-                    foreach (var (id, name, type) in filtered)
+                    foreach (var (id, name, type, row) in filtered)
                     {
-                        ImGui.PushID($"v2mod_{id}");
+                        ImGui.PushID($"v2mod_{row}");
                         ImGui.TableNextRow();
 
                         var currentValue = GetModTier(id);
@@ -409,7 +413,7 @@ namespace AltarHelperV2
                 Set(BossKey(r.One), AltarRewardWeights.BossSingle(chaos, divine, thread, isDivine));
         }
 
-        // Rewards that have no market price: kept as manual values (duplication, quantity, Divination Cards).
+        // Rewards that have no market price: kept as manual values (duplication, rarity, Divination Cards).
         private static void AddManual(IDictionary<string, int> dict)
         {
             // Duplicated drops multiply EVERYTHING that drops, so they are weighted high.
@@ -419,7 +423,6 @@ namespace AltarHelperV2
             dict["Unique Items dropped by slain Enemies have #% chance to be Duplicated"] = 700;
             dict["Maps dropped by slain Enemies have #% chance to be Duplicated"] = 500;
             dict["Gems dropped by slain Enemies have #% chance to be Duplicated"] = 300;
-            dict["#% increased Quantity of Items found in this Area"] = 1000;
             dict["#% increased Rarity of Items found in this Area"] = 1500;
 
             // Extra Divination Cards (boss: guaranteed extra cards, minion: chance per kill)
