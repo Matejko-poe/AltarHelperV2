@@ -257,7 +257,6 @@ namespace AltarHelperV2
             ("Basic Currency Items dropped by slain Enemies have #% chance to be Duplicated", "Basic Currency Items dropped by slain Enemies have (10–15)% chance to be Duplicated", "Player"),
             ("Gems dropped by slain Enemies have #% chance to be Duplicated", "Gems dropped by slain Enemies have (10–15)% chance to be Duplicated", "Player"),
             ("Maps dropped by slain Enemies have #% chance to be Duplicated", "Maps dropped by slain Enemies have (10–15)% chance to be Duplicated", "Player"),
-            ("#% increased Quantity of Items found in this Area", "(10–15)% increased Quantity of Items found in this Area", "Player"),
             ("#% increased Rarity of Items found in this Area", "(5–10)% increased Rarity of Items found in this Area", "Player"),
             ("#% increased Experience gain", "(8–12)% increased Experience gain", "Player"),
             ("#% reduced Quantity of Items found in this Area", "(10–20)% reduced Quantity of Items found in this Area", "Player"),
