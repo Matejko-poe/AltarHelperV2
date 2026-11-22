@@ -413,7 +413,7 @@ namespace AltarHelperV2
                 Set(BossKey(r.One), AltarRewardWeights.BossSingle(chaos, divine, thread, isDivine));
         }
 
-        // Rewards that have no market price: kept as manual values (duplication, quantity, Divination Cards).
+        // Rewards that have no market price: kept as manual values (duplication, rarity, Divination Cards).
         private static void AddManual(IDictionary<string, int> dict)
         {
             // Duplicated drops multiply EVERYTHING that drops, so they are weighted high.
@@ -423,7 +423,6 @@ namespace AltarHelperV2
             dict["Unique Items dropped by slain Enemies have #% chance to be Duplicated"] = 700;
             dict["Maps dropped by slain Enemies have #% chance to be Duplicated"] = 500;
             dict["Gems dropped by slain Enemies have #% chance to be Duplicated"] = 300;
-            dict["#% increased Quantity of Items found in this Area"] = 1000;
             dict["#% increased Rarity of Items found in this Area"] = 1500;
 
             // Extra Divination Cards (boss: guaranteed extra cards, minion: chance per kill)
