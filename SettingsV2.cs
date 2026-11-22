@@ -167,12 +167,16 @@ namespace AltarHelperV2
                     ImGui.TableNextColumn(); ImGui.TextUnformatted("Alert");
                     ImGui.TableNextColumn(); ImGui.TextUnformatted("Clear");
 
+                    // Several rows share an Id (the same mod for the map boss and for minions, or with other
+                    // value ranges); they edit the same weight. Their ImGui IDs use the row's position in
+                    // AltarTypes, so they stay unique and don't change while the search text changes.
                     var filtered = AltarModsConstants.AltarTypes
+                        .Select((t, row) => (t.Id, t.Name, t.Type, Row: row))
                         .Where(t => t.Name.Contains(unitFilter, StringComparison.InvariantCultureIgnoreCase));
 
-                    foreach (var (id, name, type) in filtered)
+                    foreach (var (id, name, type, row) in filtered)
                     {
-                        ImGui.PushID($"v2mod_{id}");
+                        ImGui.PushID($"v2mod_{row}");
                         ImGui.TableNextRow();
 
                         var currentValue = GetModTier(id);
